@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 import AppImage from '../../../components/AppImage';
+import { getPropertyTypeDisplay } from '../../../utils/enums'; // Import the enum helper
 
 // Language Context
 const LanguageContext = React.createContext({
@@ -163,7 +164,7 @@ const PropertyCard = ({ property, onToggleFavorite }) => {
         <div className="absolute top-3 left-3 flex items-center space-x-2">
           {/* Property Type Badge */}
           <span className="px-2 py-1 bg-primary text-primary-foreground text-xs font-medium rounded-full">
-            {property.propertyType}
+            {getPropertyTypeDisplay(property.propertyType)}
           </span>
           
           {/* Virtual Tour Badge */}

@@ -8,6 +8,12 @@ import TrustOnboardingFlow from "pages/trust-onboarding-flow";
 import AiChatSupportInterface from "pages/ai-chat-support-interface";
 import UserRegistrationAuthentication from "pages/user-registration-authentication";
 import PropertySearchListingGrid from "pages/property-search-listing-grid";
+import PropertyDetailView from "pages/property-detail-view";
+import UserProfilePage from "pages/user-profile";
+import LandlordDashboardPage from "pages/landlord-dashboard";
+import PropertyEditorPage from "pages/property-editor";
+import CommissionsOverview from "pages/admin-dashboard/panels/CommissionsOverview";
+import RenterDashboardPage from "pages/renter-dashboard"; // Import Renter Dashboard
 import NotFound from "pages/NotFound";
 
 const Routes = () => {
@@ -23,6 +29,13 @@ const Routes = () => {
         <Route path="/ai-chat-support-interface" element={<AiChatSupportInterface />} />
         <Route path="/user-registration-authentication" element={<UserRegistrationAuthentication />} />
         <Route path="/property-search-listing-grid" element={<PropertySearchListingGrid />} />
+        <Route path="/property-detail-view/:id" element={<PropertyDetailView />} />
+        <Route path="/profile" element={<UserProfilePage />} />
+        <Route path="/landlord-dashboard" element={<LandlordDashboardPage />} />
+        <Route path="/landlord-dashboard/properties/new" element={<PropertyEditorPage />} />
+        <Route path="/landlord-dashboard/properties/edit/:propertyId" element={<PropertyEditorPage />} />
+        <Route path="/admin/commissions" element={<CommissionsOverview />} />
+        <Route path="/dashboard" element={<RenterDashboardPage />} /> {/* Renter/Buyer Dashboard */}
         <Route path="*" element={<NotFound />} />
       </RouterRoutes>
       </ErrorBoundary>

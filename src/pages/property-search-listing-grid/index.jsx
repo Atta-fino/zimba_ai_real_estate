@@ -362,12 +362,17 @@ const PropertySearchListingGrid = () => {
               )}
             </>
           ) : (
-            /* Map View Placeholder */
+            /* Map View */
             <div className="h-96 bg-muted rounded-lg flex items-center justify-center">
-              <div className="text-center">
-                <Icon name="Map" size={48} className="mx-auto mb-4 text-muted-foreground" />
-                <p className="text-muted-foreground">Map view coming soon</p>
-              </div>
+              {/*
+                TODO: Replace this with a real interactive map component.
+                This is a placeholder image of a map.
+              */}
+              <img
+                src="https://raw.githubusercontent.com/Tracecat-ai/public_test_repos/main/rent-trust-pro/map_placeholder.png"
+                alt="Map of property locations"
+                className="w-full h-full object-cover rounded-lg"
+              />
             </div>
           )}
         </div>

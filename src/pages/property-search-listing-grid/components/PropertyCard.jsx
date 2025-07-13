@@ -275,24 +275,12 @@ const PropertyCard = ({ property, onToggleFavorite }) => {
         {/* Action Buttons */}
         <div className="flex items-center space-x-2 pt-2 border-t border-border">
           <Button
-            variant="outline"
-            size="sm"
-            className="flex-1"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              // Handle contact agent
-            }}
-          >
-            <Icon name="MessageCircle" size={14} />
-            <span className="ml-1">{t.contactAgent}</span>
-          </Button>
-          <Button
             variant="default"
             size="sm"
             className="flex-1"
           >
-            {t.viewDetails}
+            <Icon name="Eye" size={14} />
+            <span className="ml-1">{t.viewDetails}</span>
           </Button>
         </div>
       </div>

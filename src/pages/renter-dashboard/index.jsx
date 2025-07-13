@@ -6,14 +6,16 @@ import MyBookings from './components/MyBookings';
 import SavedProperties from './components/SavedProperties';
 import FlexPay from './components/FlexPay';
 import LegalGuides from './components/LegalGuides';
-import RenterTrustScore from './components/RenterTrustScore'; // Import the actual component
+import RenterTrustScore from './components/RenterTrustScore';
+import DocumentUpload from './components/DocumentUpload'; // Import the new component
+import { useDiaspora } from '../../context/DiasporaContext'; // Import diaspora hook
 
 // Placeholder components for Renter Dashboard sections
-// const RenterTrustScoreSection = () => <div className="p-6 bg-card rounded-lg shadow-lg"><h2 className="text-xl font-semibold">My TrustScore</h2><p>Your Zimba TrustScore details.</p></div>; // Replaced
 
 
 const RenterDashboardPage = () => {
   const [activeTab, setActiveTab] = useState('my-bookings'); // Default tab
+  const { isDiasporaUser } = useDiaspora(); // Use the diaspora hook
 
   // Mock user for context, e.g., for Legal Guides
   const mockUser = { name: "Amina Diallo", country: "KE" }; // Example: User in Kenya
@@ -22,6 +24,8 @@ const RenterDashboardPage = () => {
     { id: 'my-bookings', label: 'My Bookings', icon: 'CalendarHeart', component: <MyBookings /> },
     { id: 'saved-properties', label: 'Saved Properties', icon: 'Heart', component: <SavedProperties /> },
     { id: 'flex-pay', label: 'FlexPay', icon: 'CreditCard', component: <FlexPay /> },
+    // Conditionally add the 'My Documents' tab for diaspora users
+    ...(isDiasporaUser ? [{ id: 'my-documents', label: 'My Documents', icon: 'FileText', component: <DocumentUpload /> }] : []),
     { id: 'trust-score', label: 'My TrustScore', icon: 'ShieldCheck', component: <RenterTrustScore /> },
     { id: 'legal-guides', label: 'Legal Guides', icon: 'ScrollText', component: <LegalGuides userCountryCode={mockUser.country} /> },
   ];

@@ -11,6 +11,8 @@ import LoadingSkeleton from './components/LoadingSkeleton';
 import EmptyState from './components/EmptyState';
 import Icon from '../../components/AppIcon';
 import Button from '../../components/ui/Button';
+import MapboxView from '../../components/MapboxView';
+import OfflineState from '../../components/ui/OfflineState'; // Import the OfflineState component
 
 // Language Context
 const LanguageContext = React.createContext({
@@ -38,6 +40,7 @@ const PropertySearchListingGrid = () => {
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
+  const [isOffline, setIsOffline] = useState(false); // Add offline state
 
   // Translations
   const translations = {
@@ -126,7 +129,9 @@ const PropertySearchListingGrid = () => {
       amenities: ['Parking', 'Security', 'Swimming Pool'],
       landlordResponsive: true,
       virtualTour: true,
-      favorite: false
+      favorite: false,
+      latitude: 6.4284,
+      longitude: 3.4218
     },
     {
       id: 2,
@@ -142,7 +147,9 @@ const PropertySearchListingGrid = () => {
       amenities: ['WiFi', 'Kitchen', 'AC'],
       landlordResponsive: false,
       virtualTour: false,
-      favorite: true
+      favorite: true,
+      latitude: 6.6018,
+      longitude: 3.3515
     }
   ];
 
@@ -327,6 +334,7 @@ const PropertySearchListingGrid = () => {
 
         {/* Content Area */}
         <div className="px-4 lg:px-6 py-6">
+          {isOffline && <div className="mb-6"><OfflineState onRetry={() => console.log("Retrying connection...")}/></div>}
           {loading ? (
             <LoadingSkeleton />
           ) : sortedProperties.length === 0 ? (
@@ -362,12 +370,9 @@ const PropertySearchListingGrid = () => {
               )}
             </>
           ) : (
-            /* Map View Placeholder */
-            <div className="h-96 bg-muted rounded-lg flex items-center justify-center">
-              <div className="text-center">
-                <Icon name="Map" size={48} className="mx-auto mb-4 text-muted-foreground" />
-                <p className="text-muted-foreground">Map view coming soon</p>
-              </div>
+            /* Map View */
+            <div className="h-[calc(100vh-250px)]"> {/* Adjust height to fill available space */}
+                <MapboxView properties={sortedProperties} />
             </div>
           )}
         </div>

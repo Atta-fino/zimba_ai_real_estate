@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { getPropertyTypeDisplay, getFeatureDisplay } from '../../utils/enums';
+import { useDiaspora } from '../../context/DiasporaContext'; // Import the hook
 import AppImage from '../../components/AppImage';
 import Icon from '../../components/AppIcon'; // Assuming you have an Icon component
 import Button from '../../components/ui/Button'; // Assuming you have a Button component
@@ -38,6 +39,7 @@ const fetchPropertyById = async (id) => {
       },
       virtualTourLink: 'https://my.matterport.com/show/?m=DEMO',
       verified: true,
+      trustedForDiaspora: true, // New flag for the badge
       trustScore: 4.9,
       amenities: ['Gym', 'Swimming Pool', '24/7 Security', 'Covered Parking', 'Elevator'],
       yearBuilt: 2020,
@@ -91,6 +93,7 @@ const LanguageContext = React.createContext({ language: 'en', translations: {} }
 
 const PropertyDetailView = () => {
   const { id } = useParams();
+  const { isDiasporaUser } = useDiaspora(); // Use the diaspora hook
   const { language } = useContext(LanguageContext); // Use if you have global language context
 
   const [property, setProperty] = useState(null);
@@ -261,6 +264,11 @@ const PropertyDetailView = () => {
                     <Icon name="Star" size={16} className="mr-1 text-yellow-400 fill-current" /> Trust Score: {property.trustScore}/5
                   </span>
                 )}
+                {isDiasporaUser && property.trustedForDiaspora && (
+                    <span className="flex items-center text-sm font-semibold px-2 py-1 bg-blue-100 text-blue-700 rounded-full">
+                        <Icon name="Globe" size={14} className="mr-1.5"/> Trusted for Diaspora
+                    </span>
+                )}
               </div>
             </div>
 
@@ -339,14 +347,19 @@ const PropertyDetailView = () => {
             {/* Virtual Tour & Floor Plan */}
             {(property.virtualTourLink || property.floorPlan) && (
               <div className="mb-6 p-6 bg-card border border-border rounded-lg shadow-md">
-                <h2 className="text-2xl font-semibold font-heading mb-4">Media</h2>
-                <div className="flex space-x-4">
+                <h2 className="text-2xl font-semibold font-heading mb-4">Media & Tours</h2>
+                <div className="flex flex-wrap gap-3">
                   {property.virtualTourLink && (
                     <a href={property.virtualTourLink} target="_blank" rel="noopener noreferrer">
                       <Button variant="outline">
-                        <Icon name="Video" size={18} className="mr-2"/> Virtual Tour
+                        <Icon name="Video" size={18} className="mr-2"/> View Virtual Tour
                       </Button>
                     </a>
+                  )}
+                  {isDiasporaUser && (
+                     <Button variant="default" onClick={() => console.log('Requesting virtual tour...')}>
+                        <Icon name="Camera" size={18} className="mr-2"/> Request a Live Virtual Tour
+                     </Button>
                   )}
                   {property.floorPlan && (
                      <a href={property.floorPlan} target="_blank" rel="noopener noreferrer"> {/* Or open in a modal */}
@@ -409,10 +422,12 @@ const PropertyDetailView = () => {
                   <Button className="w-full mb-2">
                     <Icon name="Phone" size={16} className="mr-2"/> Call Agent ({property.agent.phone})
                   </Button>
-                  <Button variant="outline" className="w-full">
+                  <Button variant="outline" className="w-full mb-2">
                      <Icon name="Mail" size={16} className="mr-2"/> Email Agent
                   </Button>
-                  {/* Placeholder for a contact form or more actions */}
+                  <Button variant="outline" className="w-full" onClick={() => alert('Opening chat with landlord... (Simulation)')}>
+                     <Icon name="MessageSquare" size={16} className="mr-2"/> Chat with Landlord
+                  </Button>
                 </div>
               )}
 
@@ -422,9 +437,12 @@ const PropertyDetailView = () => {
                   <p className="text-3xl font-bold text-primary mb-4">
                     {formatPrice(property.price, property.currency)}
                   </p>
-                  <Button size="lg" className="w-full mb-3">
+                  <Button size="lg" className="w-full mb-2">
                     Request a Viewing
                   </Button>
+                   <Button size="lg" variant="default" className="w-full mb-3 bg-green-600 hover:bg-green-700" onClick={() => alert('Proceeding to secure escrow... (Simulation)')}>
+                        <Icon name="Lock" size={18} className="mr-2"/> Secure with Escrow
+                   </Button>
                   <p className="text-xs text-muted-foreground text-center">
                     Posted on: {new Date(property.postedDate).toLocaleDateString()}
                   </p>

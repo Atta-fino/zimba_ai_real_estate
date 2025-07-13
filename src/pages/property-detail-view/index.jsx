@@ -212,10 +212,12 @@ const PropertyDetailView = () => {
                   </div>
 
                   {property.escrowEnabled ? (
-                    <Button size="lg" className="w-full mb-2">
-                      <Icon name="Lock" size={16} className="mr-2" />
-                      {t.en.initiateEscrow}
-                    </Button>
+                    <Link to={`/escrow/${property.id}`} className="w-full">
+                      <Button size="lg" className="w-full mb-2">
+                        <Icon name="Lock" size={16} className="mr-2" />
+                        {t.en.initiateEscrow}
+                      </Button>
+                    </Link>
                   ) : (
                     <Button size="lg" className="w-full mb-2" disabled>
                       Escrow Not Available

@@ -9,6 +9,7 @@ import AiChatSupportInterface from "pages/ai-chat-support-interface";
 import UserRegistrationAuthentication from "pages/user-registration-authentication";
 import PropertySearchListingGrid from "pages/property-search-listing-grid";
 import PropertyDetailView from "pages/property-detail-view";
+import EscrowPage from "pages/escrow";
 import NotFound from "pages/NotFound";
 
 const Routes = () => {
@@ -25,6 +26,7 @@ const Routes = () => {
         <Route path="/user-registration-authentication" element={<UserRegistrationAuthentication />} />
         <Route path="/property-search-listing-grid" element={<PropertySearchListingGrid />} />
         <Route path="/property-detail-view/:id" element={<PropertyDetailView />} />
+        <Route path="/escrow/:id" element={<EscrowPage />} />
         <Route path="*" element={<NotFound />} />
       </RouterRoutes>
       </ErrorBoundary>

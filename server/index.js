@@ -71,13 +71,24 @@ app.get('/api/escrow/:transactionId', authenticateJWT, (req, res) => {
   }
 });
 
-app.put('/api/escrow/:transactionId', authenticateJWT, (req, res) => {
+app.put('/api/escrow/:transactionId', authenticateJWT, async (req, res) => {
   const { transactionId } = req.params;
   const { status } = req.body;
   const transaction = escrowTransactions[transactionId];
   if (transaction && transaction.tenantId === req.user.username) {
     transaction.status = status;
     res.json(transaction);
+
+    // Send notifications
+    const to = `${transaction.tenantId}@example.com`; // Replace with actual tenant email
+    const subject = `Escrow transaction ${transactionId} updated`;
+    const text = `The status of your escrow transaction ${transactionId} has been updated to ${status}.`;
+    await sendEmail({ to, subject, text });
+    await sendPushNotification({
+      heading: 'Escrow Update',
+      content: text,
+      external_id: transaction.tenantId
+    });
   } else {
     res.status(404).json({ error: 'Transaction not found' });
   }
@@ -93,6 +104,7 @@ const io = new Server(server, {
   }
 });
 
+const { sendEmail, sendPushNotification } = require('./notifications');
 const chatHistory = {};
 
 io.on('connection', (socket) => {
@@ -105,12 +117,23 @@ io.on('connection', (socket) => {
     }
   });
 
-  socket.on('chat message', ({ propertyId, msg }) => {
+  socket.on('chat message', async ({ propertyId, msg }) => {
     if (!chatHistory[propertyId]) {
       chatHistory[propertyId] = [];
     }
     chatHistory[propertyId].push(msg);
     io.to(propertyId).emit('chat message', msg);
+
+    // Send notifications
+    const to = 'landlord@example.com'; // Replace with actual landlord email
+    const subject = `New message about ${propertyId}`;
+    const text = `You have a new message from a tenant about property ${propertyId}: ${msg.text}`;
+    await sendEmail({ to, subject, text });
+    await sendPushNotification({
+      heading: 'New Message',
+      content: text,
+      external_id: 'landlord123' // Replace with actual landlord user ID
+    });
   });
 
   socket.on('disconnect', () => {

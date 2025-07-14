@@ -105,13 +105,15 @@ const EscrowPage = () => {
   useEffect(() => {
     if (property) {
       const createTransaction = async () => {
+        const token = localStorage.getItem('token');
         const response = await fetch('http://localhost:3001/api/escrow', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
           body: JSON.stringify({
             propertyId: property.id,
-            tenantId: 'tenant123', // Replace with actual tenant ID
-            landlordId: 'landlord456', // Replace with actual landlord ID
             amount: totalPayable,
           }),
         });

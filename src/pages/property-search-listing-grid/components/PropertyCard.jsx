@@ -278,9 +278,14 @@ const PropertyCard = ({ property, onToggleFavorite }) => {
             variant="default"
             size="sm"
             className="flex-1"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onCenterMap(property.latlng);
+            }}
           >
-            <Icon name="Eye" size={14} />
-            <span className="ml-1">{t.viewDetails}</span>
+            <Icon name="MapPin" size={14} />
+            <span className="ml-1">View on Map</span>
           </Button>
         </div>
       </div>

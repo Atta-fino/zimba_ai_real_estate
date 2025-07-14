@@ -10,7 +10,16 @@ import UserRegistrationAuthentication from "pages/user-registration-authenticati
 import PropertySearchListingGrid from "pages/property-search-listing-grid";
 import PropertyDetailView from "pages/property-detail-view";
 import EscrowPage from "pages/escrow";
+import LoginPage from "pages/login";
+import ProfilePage from "pages/profile";
+import ChatPage from "pages/chat";
 import NotFound from "pages/NotFound";
+import { Navigate } from "react-router-dom";
+
+const PrivateRoute = ({ children }) => {
+  const token = localStorage.getItem('token');
+  return token ? children : <Navigate to="/login" />;
+};
 
 const Routes = () => {
   return (
@@ -24,9 +33,12 @@ const Routes = () => {
         <Route path="/trust-onboarding-flow" element={<TrustOnboardingFlow />} />
         <Route path="/ai-chat-support-interface" element={<AiChatSupportInterface />} />
         <Route path="/user-registration-authentication" element={<UserRegistrationAuthentication />} />
-        <Route path="/property-search-listing-grid" element={<PropertySearchListingGrid />} />
+        <RoutSe path="/property-search-listing-grid" element={<PropertySearchListingGrid />} />
         <Route path="/property-detail-view/:id" element={<PropertyDetailView />} />
-        <Route path="/escrow/:id" element={<EscrowPage />} />
+        <Route path="/escrow/:id" element={<PrivateRoute><EscrowPage /></PrivateRoute>} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/profile" element={<PrivateRoute><ProfilePage /></PrivateRoute>} />
+        <Route path="/chat/:propertyId" element={<PrivateRoute><ChatPage /></PrivateRoute>} />
         <Route path="*" element={<NotFound />} />
       </RouterRoutes>
       </ErrorBoundary>

@@ -223,10 +223,12 @@ const PropertyDetailView = () => {
                       Escrow Not Available
                     </Button>
                   )}
-                  <Button variant="outline" size="lg" className="w-full">
-                    <Icon name="MessageCircle" size={16} className="mr-2" />
-                    {t.en.contactAgent}
-                  </Button>
+                  <Link to={`/chat/${property.id}`} className="w-full">
+                    <Button variant="outline" size="lg" className="w-full">
+                      <Icon name="MessageCircle" size={16} className="mr-2" />
+                      {t.en.contactAgent}
+                    </Button>
+                  </Link>
                 </div>
               </div>
             </aside>

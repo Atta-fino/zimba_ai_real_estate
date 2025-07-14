@@ -11,6 +11,7 @@ import LoadingSkeleton from './components/LoadingSkeleton';
 import EmptyState from './components/EmptyState';
 import Icon from '../../components/AppIcon';
 import Button from '../../components/ui/Button';
+import MapView from './components/MapView';
 
 // Language Context
 const LanguageContext = React.createContext({
@@ -126,7 +127,8 @@ const PropertySearchListingGrid = () => {
       amenities: ['Parking', 'Security', 'Swimming Pool'],
       landlordResponsive: true,
       virtualTour: true,
-      favorite: false
+      favorite: false,
+      latlng: [6.4284, 3.4214]
     },
     {
       id: 2,
@@ -142,7 +144,8 @@ const PropertySearchListingGrid = () => {
       amenities: ['WiFi', 'Kitchen', 'AC'],
       landlordResponsive: false,
       virtualTour: false,
-      favorite: true
+      favorite: true,
+      latlng: [6.6018, 3.3514]
     }
   ];
 
@@ -239,6 +242,8 @@ const PropertySearchListingGrid = () => {
     setSearchQuery('');
   };
 
+  const mapRef = React.useRef();
+
   const toggleFavorite = (propertyId) => {
     setProperties(prevProperties =>
       prevProperties.map(property =>
@@ -247,6 +252,13 @@ const PropertySearchListingGrid = () => {
           : property
       )
     );
+  };
+
+  const handleCenterMap = (latlng) => {
+    setViewMode('map');
+    if (mapRef.current) {
+      mapRef.current.flyTo(latlng, 15);
+    }
   };
 
   return (
@@ -344,6 +356,7 @@ const PropertySearchListingGrid = () => {
                     key={property.id}
                     property={property}
                     onToggleFavorite={toggleFavorite}
+                    onCenterMap={handleCenterMap}
                   />
                 ))}
               </div>
@@ -363,16 +376,8 @@ const PropertySearchListingGrid = () => {
             </>
           ) : (
             /* Map View */
-            <div className="h-96 bg-muted rounded-lg flex items-center justify-center">
-              {/*
-                TODO: Replace this with a real interactive map component.
-                This is a placeholder image of a map.
-              */}
-              <img
-                src="https://raw.githubusercontent.com/Tracecat-ai/public_test_repos/main/rent-trust-pro/map_placeholder.png"
-                alt="Map of property locations"
-                className="w-full h-full object-cover rounded-lg"
-              />
+            <div className="h-96 bg-muted rounded-lg">
+              <MapView properties={sortedProperties} mapRef={mapRef} />
             </div>
           )}
         </div>

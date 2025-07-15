@@ -191,6 +191,7 @@ const MessageInput = ({ onSendMessage, onAttachment, isTyping, disabled }) => {
             disabled={!message.trim() || disabled}
             className="p-2"
             title={t.send}
+            data-testid="send-button"
           >
             <Icon name="Send" size={20} />
           </Button>

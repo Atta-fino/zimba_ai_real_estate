@@ -3,11 +3,12 @@ import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import Icon from '../../components/AppIcon';
 import CommissionsOverview from './panels/CommissionsOverview';
 import VerificationQueue from './panels/VerificationQueue';
-import FlagQueue from './panels/FlagQueue'; // Import the actual component
+import FlagQueue from './panels/FlagQueue';
+import UserManagement from './panels/UserManagement';
+import PropertyManagement from './panels/PropertyManagement';
+import AppSettings from './panels/AppSettings'; // Import the new component
 
 // Placeholder components for other admin panels (will be replaced)
-// const FlagQueuePanel = () => <div className="p-6 bg-card rounded-lg shadow-lg"><h2 className="text-xl font-semibold">Flag Queue</h2><p>Reported content and users will be listed here for review.</p></div>; // Replaced
-// Add more placeholders as needed: Users, Properties, Settings etc.
 
 
 const AdminDashboardPage = () => {
@@ -36,10 +37,10 @@ const AdminDashboardPage = () => {
     // Order can be adjusted based on importance/workflow
     { id: 'verification-queue', path: '/admin/verification', label: 'Verification Queue', icon: 'UserCheck', component: <VerificationQueue /> },
     { id: 'flag-queue', path: '/admin/flags', label: 'Flag Queue', icon: 'Flag', component: <FlagQueue /> },
+    { id: 'users', path: '/admin/users', label: 'User Management', icon: 'Users', component: <UserManagement /> },
+    { id: 'properties', path: '/admin/properties', label: 'Property Management', icon: 'Home', component: <PropertyManagement /> },
     { id: 'commissions', path: '/admin/commissions', label: 'Commissions', icon: 'Percent', component: <CommissionsOverview /> },
-    // { id: 'users', path: '/admin/users', label: 'User Management', icon: 'Users', component: <UserManagementPanel /> },
-    // { id: 'properties', path: '/admin/properties', label: 'Property Management', icon: 'Home', component: <PropertyManagementPanel /> },
-    // { id: 'settings', path: '/admin/settings', label: 'App Settings', icon: 'Settings', component: <AppSettingsPanel /> },
+    { id: 'settings', path: '/admin/settings', label: 'App Settings', icon: 'Settings', component: <AppSettings /> },
   ];
 
   const ActiveComponent = navItems.find(item => item.id === activeTab)?.component || <CommissionsOverview />;

@@ -184,6 +184,7 @@ const FilterBar = ({ isOpen, onClose, filters, onFiltersChange }) => {
           <FilterContent
             t={t}
             tempFilters={tempFilters}
+              setTempFilters={setTempFilters}
             propertyTypes={propertyTypes}
             amenitiesList={amenitiesList}
             handlePropertyTypeChange={handlePropertyTypeChange}
@@ -217,6 +218,7 @@ const FilterBar = ({ isOpen, onClose, filters, onFiltersChange }) => {
             <FilterContent
               t={t}
               tempFilters={tempFilters}
+              setTempFilters={setTempFilters}
               propertyTypes={propertyTypes}
               amenitiesList={amenitiesList}
               handlePropertyTypeChange={handlePropertyTypeChange}

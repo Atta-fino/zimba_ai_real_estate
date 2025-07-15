@@ -13,7 +13,14 @@ jest.mock('../../../components/ui/OfflineState', () => ({ onRetry }) => <div dat
 jest.mock('../../../components/ui/Header', () => () => <header>Header</header>);
 jest.mock('../../../components/ui/PrimaryTabNavigation', () => () => <nav>Primary Nav</nav>);
 jest.mock('../components/SearchInput', () => () => <input placeholder="Search" />);
-jest.mock('../components/FilterBar', () => () => <div>Filter Bar</div>);
+// Mock FilterBar to pass filter changes up
+jest.mock('../components/FilterBar', () => ({ onFiltersChange }) => (
+    <div>
+        <button onClick={() => onFiltersChange({ propertyTypes: ['Apartments'], priceRange: {min: '', max: ''}, amenities: [], trustScoreMin: 0 })}>
+            Filter Apartments
+        </button>
+    </div>
+));
 jest.mock('../components/SortDropdown', () => () => <select><option>Sort</option></select>);
 jest.mock('../components/MapToggle', () => ({ viewMode, onChange }) => <button onClick={() => onChange(viewMode === 'grid' ? 'map' : 'grid')}>Toggle View</button>);
 
@@ -37,6 +44,30 @@ describe('PropertySearchListingGrid Refinements', () => {
         expect(screen.getByTestId('mapbox-view')).toBeInTheDocument();
         expect(screen.getByText('Map of 2 properties')).toBeInTheDocument(); // Based on mock data length
         expect(screen.queryAllByTestId('property-card').length).toBe(0);
+    });
+  });
+
+  it('should filter the property list and map data when a filter is applied', async () => {
+    render(<MemoryRouter><PropertySearchListingGrid /></MemoryRouter>);
+    await waitFor(() => expect(screen.queryByText('Loading...')).not.toBeInTheDocument(), { timeout: 2000 });
+
+    // Initially, 2 properties are shown
+    expect(screen.getAllByTestId('property-card').length).toBe(2);
+
+    // Click the mock filter button inside the mocked FilterBar
+    fireEvent.click(screen.getByText('Filter Apartments'));
+
+    // The list should update to show only 1 property
+    await waitFor(() => {
+      expect(screen.getAllByTestId('property-card').length).toBe(1);
+      expect(screen.getByText('Modern 2-Bedroom Apartment')).toBeInTheDocument();
+      expect(screen.queryByText('Luxury Self-Contain Studio')).not.toBeInTheDocument();
+    });
+
+    // Switch to map view and check if the map receives the filtered data
+    fireEvent.click(screen.getByText('Toggle View'));
+    await waitFor(() => {
+        expect(screen.getByText('Map of 1 properties')).toBeInTheDocument();
     });
   });
 

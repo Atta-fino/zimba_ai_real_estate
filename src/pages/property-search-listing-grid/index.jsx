@@ -227,10 +227,6 @@ const PropertySearchListingGrid = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [loadingMore, hasMore, sortedProperties.length]);
 
-  const handleFilterChange = (newFilters) => {
-    setSelectedFilters(newFilters);
-  };
-
   const handleSearchChange = (query) => {
     setSearchQuery(query);
   };

@@ -17,7 +17,7 @@ jest.mock('../../../components/AppIcon', () => ({ name }) => <svg data-testid={`
 jest.mock('../../../components/ui/Button', () => ({ children, ...props }) => <button {...props}>{children}</button>);
 
 
-describe('PropertyDetailView Diaspora Enhancements', () => {
+describe('PropertyDetailView Enhancements', () => {
   const renderWithDiasporaStatus = (isDiaspora, propertyId = '1') => {
     useDiaspora.mockReturnValue({ isDiasporaUser: isDiaspora });
     render(

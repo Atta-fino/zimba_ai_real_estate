@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import Button from '../../../components/ui/Button';
 import Icon from '../../../components/AppIcon';
 import { Link } from 'react-router-dom';
+import { updatePropertyStatus } from '../../../data/mockProperties'; // Import the update function
 
 // Mock data for flagged items
 const mockFlagQueue = [
@@ -63,14 +64,20 @@ const FlagQueue = () => {
     setIsProcessing(null);
   };
 
-  const handleTakeAction = async (flagId, action) => {
+  const handleTakeAction = async (flagId, action, itemId) => {
     setIsProcessing(flagId);
-    console.log(`Performing action '${action}' for flag ${flagId}.`);
+    console.log(`Performing action '${action}' for flag ${flagId} on item ${itemId}.`);
+
+    if (action === 'hide_listing') {
+        updatePropertyStatus(itemId, 'hidden');
+    }
+    // Add other actions like 'suspend_user' here if needed, calling updateUserStatus
+
     await new Promise(resolve => setTimeout(resolve, 500));
-    // In a real app, this might update the item's status (e.g., property.is_hidden = true)
-    // For this mock, we just remove it from the queue as if it's handled.
+    // Remove the flag from the queue after handling
     setQueue(prev => prev.filter(f => f.id !== flagId));
     setIsProcessing(null);
+    alert(`Action '${action}' completed for item ${itemId}.`);
   };
 
   const formatDate = (dateString) => dateString ? new Date(dateString).toLocaleString('en-GB') : 'N/A';
@@ -134,7 +141,7 @@ const FlagQueue = () => {
                                     <Button onClick={() => handleDismissFlag(flag.id)} variant="outline" size="sm" disabled={isProcessing === flag.id}>
                                         <Icon name="Check" size={14} className="mr-1.5"/> Dismiss
                                     </Button>
-                                    <Button onClick={() => handleTakeAction(flag.id, 'hide_listing')} variant="destructive_outline" size="sm" disabled={isProcessing === flag.id}>
+                                    <Button onClick={() => handleTakeAction(flag.id, 'hide_listing', flag.item_id)} variant="destructive_outline" size="sm" disabled={isProcessing === flag.id}>
                                         <Icon name="AlertTriangle" size={14} className="mr-1.5"/> Action
                                     </Button>
                                 </div>

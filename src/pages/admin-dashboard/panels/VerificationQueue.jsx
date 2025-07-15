@@ -2,8 +2,11 @@ import React, { useState } from 'react';
 import Button from '../../../components/ui/Button';
 import Icon from '../../../components/AppIcon';
 import AppImage from '../../../components/AppImage';
+import { updateUserVerificationStatus } from '../../../data/mockUsers';
 
-// Mock data for landlord verification queue
+// Mock data for landlord verification queue - this would now be dynamically generated
+// from the main mockUsersData store, but for simplicity we'll keep a static version
+// and just have the actions update the central store.
 const mockVerificationQueue = [
   {
     id: 'verif_1',
@@ -27,18 +30,8 @@ const mockVerificationQueue = [
     risk_result: 'medium',
     status: 'pending_human_review',
   },
-   {
-    id: 'verif_3',
-    user_id: 'landlord_C',
-    user_name: 'Chinedu Okoro',
-    submitted_at: '2024-07-28T09:00:00Z',
-    id_image_url: null, // Example where ID hasn't been submitted yet
-    biometric_file_url: null,
-    ai_score: null,
-    risk_result: null,
-    status: 'pending_submission',
-  },
 ];
+
 
 const VerificationQueue = () => {
   const [queue, setQueue] = useState(mockVerificationQueue);
@@ -51,8 +44,8 @@ const VerificationQueue = () => {
   };
 
   const handleApprove = (verificationId) => {
-    console.log(`Approving verification ${verificationId}`);
-    // Simulate API call
+    console.log(`Approving verification for user: ${selectedVerification.user_id}`);
+    updateUserVerificationStatus(selectedVerification.user_id, 'human_verified', true);
     alert(`Verification for ${selectedVerification.user_name} approved!`);
     setQueue(prev => prev.filter(v => v.id !== verificationId));
     setSelectedVerification(null);
@@ -63,8 +56,8 @@ const VerificationQueue = () => {
       alert("Please provide rejection notes before rejecting.");
       return;
     }
-    console.log(`Rejecting verification ${verificationId} with notes: ${rejectionNotes}`);
-    // Simulate API call
+    console.log(`Rejecting verification for user: ${selectedVerification.user_id} with notes: ${rejectionNotes}`);
+    updateUserVerificationStatus(selectedVerification.user_id, 'rejected', false);
     alert(`Verification for ${selectedVerification.user_name} rejected.`);
     setQueue(prev => prev.filter(v => v.id !== verificationId));
     setSelectedVerification(null);

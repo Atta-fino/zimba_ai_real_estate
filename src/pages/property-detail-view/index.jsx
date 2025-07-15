@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { getPropertyTypeDisplay, getFeatureDisplay } from '../../utils/enums';
-import { useDiaspora } from '../../context/DiasporaContext'; // Import the hook
+import { useDiaspora } from '../../context/DiasporaContext';
+import { getUserById } from '../../data/mockUsers'; // Import user data store
 import AppImage from '../../components/AppImage';
 import Icon from '../../components/AppIcon'; // Assuming you have an Icon component
 import Button from '../../components/ui/Button'; // Assuming you have a Button component
@@ -31,11 +32,11 @@ const fetchPropertyById = async (id) => {
       area: 120, // sqm
       features: ['air_conditioner', 'pool', 'parking_spot', 'fiber_internet', 'ensuite_bathroom', 'cctv_surveillance'],
       agent: {
-        name: 'Adeola Property Pro',
+        id: 'landlord_A', // Link to the user in the mock store
+        name: 'Aisha Bello',
         phone: '+234 801 234 5678',
-        email: 'adeola@propertypro.ng',
-        avatar: '/assets/images/stock/agent_female_1.jpg',
-        badges: ['Human Verified', 'SuperHost'] // Added badges
+        email: 'aisha.bello@example.com',
+        avatar: '/assets/images/stock/agent_female_1.jpg'
       },
       virtualTourLink: 'https://my.matterport.com/show/?m=DEMO',
       verified: true,
@@ -401,22 +402,27 @@ const PropertyDetailView = () => {
                       fallbackSrc="/assets/images/no_image.png"
                     />
                     <div>
+                    <div>
                       <h3 className="text-lg font-semibold font-heading">{property.agent.name}</h3>
                       <p className="text-sm text-muted-foreground mb-1">Listing Agent</p>
-                      {/* Display Landlord Badges */}
-                      {property.agent.badges && property.agent.badges.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mt-1">
-                          {property.agent.badges.map(badge => (
-                            <span key={badge} className={`px-2 py-0.5 text-xs font-semibold rounded-full ${
-                              badge === 'SuperHost' ? 'bg-purple-100 text-purple-700' : 'bg-green-100 text-green-700'
-                            }`}>
-                              {badge === 'SuperHost' && <Icon name="Award" size={12} className="inline mr-1 -mt-0.5"/>}
-                              {badge !== 'SuperHost' && <Icon name="BadgeCheck" size={12} className="inline mr-1 -mt-0.5"/>}
-                              {badge}
-                            </span>
-                          ))}
-                        </div>
-                      )}
+                      {/* Dynamically Display Landlord Badges */}
+                      {(() => {
+                        const landlord = getUserById(property.agent.id);
+                        const badges = [];
+                        if (landlord?.is_verified) badges.push({ name: 'Human Verified', icon: 'BadgeCheck', color: 'bg-green-100 text-green-700' });
+                        if (landlord?.superhost) badges.push({ name: 'SuperHost', icon: 'Award', color: 'bg-purple-100 text-purple-700' });
+
+                        return (
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {badges.map(badge => (
+                              <span key={badge.name} className={`px-2 py-0.5 text-xs font-semibold rounded-full ${badge.color}`}>
+                                <Icon name={badge.icon} size={12} className="inline mr-1 -mt-0.5"/>
+                                {badge.name}
+                              </span>
+                            ))}
+                          </div>
+                        );
+                      })()}
                     </div>
                   </div>
                   <Button className="w-full mb-2">
@@ -440,9 +446,11 @@ const PropertyDetailView = () => {
                   <Button size="lg" className="w-full mb-2">
                     Request a Viewing
                   </Button>
-                   <Button size="lg" variant="default" className="w-full mb-3 bg-green-600 hover:bg-green-700" onClick={() => alert('Proceeding to secure escrow... (Simulation)')}>
-                        <Icon name="Lock" size={18} className="mr-2"/> Secure with Escrow
-                   </Button>
+                   <Link to={`/book/${property.id}`} className="w-full">
+                        <Button size="lg" variant="default" className="w-full mb-3 bg-green-600 hover:bg-green-700">
+                            <Icon name="Lock" size={18} className="mr-2"/> Secure with Escrow
+                        </Button>
+                   </Link>
                   <p className="text-xs text-muted-foreground text-center">
                     Posted on: {new Date(property.postedDate).toLocaleDateString()}
                   </p>

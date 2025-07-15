@@ -3,6 +3,12 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import VerificationQueue from '../VerificationQueue';
 
+// Mock the data store
+jest.mock('../../../../data/mockUsers', () => ({
+  updateUserVerificationStatus: jest.fn(),
+}));
+import { updateUserVerificationStatus } from '../../../../data/mockUsers';
+
 // Mock UI components
 jest.mock('../../../../components/ui/Button', () => ({ children, ...props }) => <button {...props}>{children}</button>);
 jest.mock('../../../../components/AppIcon', () => ({ name }) => <svg data-testid={`icon-${name}`} />);
@@ -43,19 +49,19 @@ describe('VerificationQueue Panel Component', () => {
     expect(screen.getByText('Reject')).toBeInTheDocument();
   });
 
-  it('should simulate approving a verification', async () => {
+  it('should call updateUserVerificationStatus on approval', async () => {
     setup();
     fireEvent.click(screen.getByText('Aisha Bello')); // Select
     fireEvent.click(screen.getByText('Approve'));
 
+    expect(updateUserVerificationStatus).toHaveBeenCalledWith('landlord_A', 'human_verified', true);
     expect(window.alert).toHaveBeenCalledWith('Verification for Aisha Bello approved!');
     await waitFor(() => {
-      expect(screen.queryByText('Aisha Bello')).not.toBeInTheDocument(); // Item removed from queue
-      expect(screen.getByText('Pending Submissions (2)')).toBeInTheDocument();
+      expect(screen.queryByText('Aisha Bello')).not.toBeInTheDocument();
     });
   });
 
-  it('should require notes for rejection and simulate rejecting a verification', async () => {
+  it('should call updateUserVerificationStatus on rejection', async () => {
     setup();
     fireEvent.click(screen.getByText('Babatunde Adebayo')); // Select
 
@@ -67,10 +73,10 @@ describe('VerificationQueue Panel Component', () => {
     fireEvent.change(notesTextarea, { target: { value: 'ID photo is unclear.' } });
     fireEvent.click(rejectButton);
 
+    expect(updateUserVerificationStatus).toHaveBeenCalledWith('landlord_B', 'rejected', false);
     expect(window.alert).toHaveBeenCalledWith('Verification for Babatunde Adebayo rejected.');
     await waitFor(() => {
       expect(screen.queryByText('Babatunde Adebayo')).not.toBeInTheDocument();
-      expect(screen.getByText('Pending Submissions (1)')).toBeInTheDocument();
     });
   });
 

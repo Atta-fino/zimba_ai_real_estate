@@ -3,16 +3,7 @@ import Button from '../../../components/ui/Button';
 import Icon from '../../../components/AppIcon';
 import Input from '../../../components/ui/Input';
 import Select from '../../../components/ui/Select';
-
-// Mock data for users
-const mockUsers = [
-  { id: 'landlord_A', name: 'Aisha Bello', email: 'aisha.bello@example.com', role: 'landlord', country: 'NG', status: 'active', is_verified: true },
-  { id: 'landlord_B', name: 'Babatunde Adebayo', email: 'babatunde.a@example.com', role: 'landlord', country: 'NG', status: 'active', is_verified: false },
-  { id: 'renter_1', name: 'Chidinma Okoro', email: 'chidinma.o@example.com', role: 'renter', country: 'KE', status: 'active', is_verified: true },
-  { id: 'diaspora_1', name: 'David Chen', email: 'david.chen@example.com', role: 'diaspora', country: 'US', status: 'active', is_verified: true },
-  { id: 'admin_1', name: 'Admin User', email: 'admin@zimba.com', role: 'admin', country: 'GH', status: 'active', is_verified: true },
-  { id: 'renter_2', name: 'Femi Adekunle', email: 'femi.a@example.com', role: 'renter', country: 'NG', status: 'suspended', is_verified: true },
-];
+import { mockUsersData } from '../../../data/mockUsers';
 
 const RoleBadge = ({ role }) => {
   let colorClasses = 'bg-gray-200 text-gray-800';
@@ -24,7 +15,7 @@ const RoleBadge = ({ role }) => {
 };
 
 const UserManagement = () => {
-  const [users, setUsers] = useState(mockUsers);
+  const [users, setUsers] = useState(mockUsersData);
   const [filters, setFilters] = useState({ role: 'all', search: '' });
 
   const handleFilterChange = (e) => {

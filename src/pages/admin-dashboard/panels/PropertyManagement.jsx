@@ -4,15 +4,7 @@ import Icon from '../../../components/AppIcon';
 import Input from '../../../components/ui/Input';
 import Select from '../../../components/ui/Select';
 import { Link } from 'react-router-dom';
-
-// Mock data for properties
-const mockAllProperties = [
-  { id: 'prop1', title: 'Spacious 3-Bedroom Apartment in Lekki', landlord_name: 'Aisha Bello', landlord_id: 'landlord_A', location: 'Lekki Phase 1, Lagos', status: 'active' },
-  { id: 'prop2', title: 'Modern Office Space in Ikeja', landlord_name: 'Babatunde Adebayo', landlord_id: 'landlord_B', location: 'Ikeja GRA, Lagos', status: 'inactive' },
-  { id: 'prop3', title: 'Cozy Self-Contain in Yaba', landlord_name: 'Aisha Bello', landlord_id: 'landlord_A', location: 'Yaba, Lagos', status: 'pending_approval' },
-  { id: 'prop_flagged_123', title: '"Luxury" Apartment with No Running Water', landlord_name: 'Mr. Ghost', landlord_id: 'user_landlord_789', location: 'Unknown', status: 'active' },
-  { id: 'prop_scam_456', title: 'Too Good To Be True Deal', landlord_name: 'Scammer Inc.', landlord_id: 'user_scammer_001', location: 'Unknown', status: 'hidden' },
-];
+import { mockPropertiesData } from '../../../data/mockProperties';
 
 const PropertyStatusBadge = ({ status }) => {
   let colorClasses = 'bg-gray-200 text-gray-800';
@@ -24,7 +16,7 @@ const PropertyStatusBadge = ({ status }) => {
 };
 
 const PropertyManagement = () => {
-  const [properties, setProperties] = useState(mockAllProperties);
+  const [properties, setProperties] = useState(mockPropertiesData);
   const [filters, setFilters] = useState({ status: 'all', search: '' });
 
   const handleFilterChange = (e) => {

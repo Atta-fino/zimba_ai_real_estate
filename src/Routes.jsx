@@ -16,7 +16,8 @@ import CommissionsOverview from "pages/admin-dashboard/panels/CommissionsOvervie
 import RenterDashboardPage from "pages/renter-dashboard";
 import SignupPage from "pages/signup";
 import LoginPage from "pages/login";
-import AdminDashboardPage from "pages/admin-dashboard"; // Import AdminDashboardPage
+import AdminDashboardPage from "pages/admin-dashboard";
+import BookingFlowPage from "pages/booking-flow"; // Import Booking Flow Page
 import NotFound from "pages/NotFound";
 
 const Routes = () => {
@@ -41,7 +42,8 @@ const Routes = () => {
         <Route path="/landlord-dashboard/properties/edit/:propertyId" element={<PropertyEditorPage />} />
         {/* Admin Dashboard Main Route - it will handle sub-panel rendering */}
         <Route path="/admin/*" element={<AdminDashboardPage />} />
-        <Route path="/dashboard" element={<RenterDashboardPage />} /> {/* Renter/Buyer Dashboard */}
+        <Route path="/dashboard" element={<RenterDashboardPage />} />
+        <Route path="/book/:propertyId" element={<BookingFlowPage />} /> {/* Booking Flow */}
         <Route path="*" element={<NotFound />} />
       </RouterRoutes>
       </ErrorBoundary>

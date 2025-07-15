@@ -3,62 +3,7 @@ import Button from '../../../components/ui/Button';
 import Icon from '../../../components/AppIcon';
 import AppImage from '../../../components/AppImage';
 import { Link } from 'react-router-dom';
-
-// Mock Renter's Bookings Data
-const mockRenterBookings = [
-  {
-    id: 'bookingRenter1',
-    propertyId: 'prop1', // Matches a property in Landlord's mock data for potential linking
-    propertyName: 'Spacious 3-Bedroom Apartment in Lekki',
-    propertyImage: '/assets/images/stock/apartment_1_a.jpg',
-    landlordName: 'Adeola Property Pro', // Could be fetched or denormalized
-    startDate: '2024-08-01',
-    endDate: '2025-07-31',
-    totalPrice: 5000000,
-    currency: 'NGN',
-    escrow_state: 'escrow_active', // pending, confirmed, escrow_active, keys_received, complete, cancelled
-    bookedAt: '2024-07-15T10:30:00Z',
-  },
-  {
-    id: 'bookingRenter2',
-    propertyId: 'prop2',
-    propertyName: 'Modern Office Space in Ikeja',
-    propertyImage: '/assets/images/stock/office_1_a.jpg',
-    landlordName: 'Chinedu Real Estate',
-    startDate: '2024-09-01',
-    endDate: '2024-09-30', // Short let
-    totalPrice: 250000,
-    currency: 'NGN',
-    escrow_state: 'pending', // Landlord needs to confirm
-    bookedAt: '2024-07-28T11:00:00Z',
-  },
-  {
-    id: 'bookingRenter3',
-    propertyId: 'prop3',
-    propertyName: 'Cozy Self-Contain in Yaba',
-    propertyImage: '/assets/images/stock/self_contain_1_a.jpg',
-    landlordName: 'Yaba Stays Ltd',
-    startDate: '2023-05-01',
-    endDate: '2024-04-30',
-    totalPrice: 800000,
-    currency: 'NGN',
-    escrow_state: 'complete',
-    bookedAt: '2023-04-20T16:00:00Z',
-  },
-   {
-    id: 'bookingRenter4',
-    propertyId: 'propNew',
-    propertyName: 'Studio Flat in Surulere',
-    propertyImage: '/assets/images/no_image.png',
-    landlordName: 'Surulere Homes',
-    startDate: '2024-10-01',
-    endDate: '2025-03-31',
-    totalPrice: 1200000,
-    currency: 'NGN',
-    escrow_state: 'confirmed', // Awaiting escrow funding / next step
-    bookedAt: '2024-07-29T09:15:00Z',
-  }
-];
+import { mockRenterBookingsData, updateBookingStatus } from '../../../data/mockBookings';
 
 // Reusable Escrow Status Badge (similar to BookingStatusBadge but could be tailored)
 const EscrowStateBadge = ({ state }) => {
@@ -110,25 +55,22 @@ const EscrowStateBadge = ({ state }) => {
 
 
 const MyBookings = () => {
-  const [bookings, setBookings] = useState(mockRenterBookings);
+  // Use a state that is initialized from the mock data store but can be updated independently
+  const [bookings, setBookings] = useState(mockRenterBookingsData);
   // TODO: Add filter state (e.g., 'active', 'past', 'all')
 
   const handleConfirmKeysReceived = (bookingId) => {
     console.log(`Renter confirmed keys received for booking ${bookingId}`);
-    // Simulate API call and update local state
-    setBookings(prevBookings =>
-      prevBookings.map(b => b.id === bookingId ? { ...b, escrow_state: 'keys_received' } : b)
-    );
+    updateBookingStatus(bookingId, 'keys_received');
+    setBookings([...mockRenterBookingsData]); // Trigger re-render by creating a new array reference
     alert("Thank you for confirming! Your landlord will be notified, and the escrow process will proceed.");
   };
 
   const handlePayEscrow = (bookingId) => {
     console.log(`Pay Escrow clicked for booking ${bookingId}`);
     alert("You would now be redirected to a secure payment page to fund the escrow for this booking. (This is a simulation)");
-    // Simulate payment and status update
-     setBookings(prevBookings =>
-      prevBookings.map(b => b.id === bookingId ? { ...b, escrow_state: 'escrow_active' } : b)
-    );
+    updateBookingStatus(bookingId, 'escrow_active');
+    setBookings([...mockRenterBookingsData]); // Trigger re-render
   };
 
 

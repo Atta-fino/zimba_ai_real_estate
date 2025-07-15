@@ -12,7 +12,8 @@ import EmptyState from './components/EmptyState';
 import Icon from '../../components/AppIcon';
 import Button from '../../components/ui/Button';
 import MapboxView from '../../components/MapboxView';
-import OfflineState from '../../components/ui/OfflineState'; // Import the OfflineState component
+import OfflineState from '../../components/ui/OfflineState';
+import { mockPropertiesData } from '../../data/mockProperties'; // Import the central properties store
 
 // Language Context
 const LanguageContext = React.createContext({
@@ -113,48 +114,13 @@ const PropertySearchListingGrid = () => {
 
   const t = translations[language] || translations.en;
 
-  // Mock property data
-  const mockProperties = [
-    {
-      id: 1,
-      title: 'Modern 2-Bedroom Apartment',
-      price: 850000,
-      currency: 'NGN',
-      location: 'Victoria Island, Lagos',
-      propertyType: 'Apartments',
-      images: ['/assets/images/no_image.png'],
-      trustScore: 4.8,
-      verified: true,
-      features: ['2 Beds', '2 Baths', '85 sqm'],
-      amenities: ['Parking', 'Security', 'Swimming Pool'],
-      landlordResponsive: true,
-      virtualTour: true,
-      favorite: false,
-      latitude: 6.4284,
-      longitude: 3.4218
-    },
-    {
-      id: 2,
-      title: 'Luxury Self-Contain Studio',
-      price: 450000,
-      currency: 'NGN',
-      location: 'Ikeja GRA, Lagos',
-      propertyType: 'Self-Contain',
-      images: ['/assets/images/no_image.png'],
-      trustScore: 4.5,
-      verified: true,
-      features: ['1 Bed', '1 Bath', '45 sqm'],
-      amenities: ['WiFi', 'Kitchen', 'AC'],
-      landlordResponsive: false,
-      virtualTour: false,
-      favorite: true,
-      latitude: 6.6018,
-      longitude: 3.3515
-    }
-  ];
-
   // Filter properties based on current filters and search
   const filteredProperties = properties.filter(property => {
+    // Exclude hidden properties from public view
+    if (property.status === 'hidden') {
+      return false;
+    }
+
     const matchesSearch = !searchQuery || 
       property.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       property.location.toLowerCase().includes(searchQuery.toLowerCase());
@@ -200,7 +166,7 @@ const PropertySearchListingGrid = () => {
       setLoading(true);
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
-      setProperties(mockProperties);
+      setProperties(mockPropertiesData); // Use the central mock data store
       setLoading(false);
     };
 

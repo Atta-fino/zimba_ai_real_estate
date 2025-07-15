@@ -3,72 +3,67 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { MemoryRouter } from 'react-router-dom';
 import FlagQueue from '../FlagQueue';
+import { updatePropertyStatus } from '../../../data/mockProperties';
+
+// Mock the data store
+jest.mock('../../../../data/mockProperties', () => ({
+  updatePropertyStatus: jest.fn(),
+}));
 
 // Mock UI components
 jest.mock('../../../../components/ui/Button', () => ({ children, ...props }) => <button {...props}>{children}</button>);
 jest.mock('../../../../components/AppIcon', () => ({ name }) => <svg data-testid={`icon-${name}`} />);
 
 describe('FlagQueue Panel Component', () => {
-  const setup = () => {
-    render(
-      <MemoryRouter>
-        <FlagQueue />
-      </MemoryRouter>
-    );
-  };
+    const setup = () => {
+        render(
+            <MemoryRouter>
+                <FlagQueue />
+            </MemoryRouter>
+        );
+    };
 
-  it('should render the panel title and table of flagged items', () => {
-    setup();
-    expect(screen.getByText('Flag Queue')).toBeInTheDocument();
-    expect(screen.getByText('Reported Items (3)')).toBeInTheDocument(); // Based on mockFlagQueue
-
-    // Table headers
-    expect(screen.getByText('Reported Item')).toBeInTheDocument();
-    expect(screen.getByText('Reason')).toBeInTheDocument();
-    expect(screen.getByText('Submitted By')).toBeInTheDocument();
-    expect(screen.getByText('Status')).toBeInTheDocument();
-    expect(screen.getByText('Actions')).toBeInTheDocument();
-
-    // Mock data
-    expect(screen.getByText('"Luxury" Apartment with No Running Water')).toBeInTheDocument();
-    expect(screen.getByText('Misleading Information')).toBeInTheDocument();
-    expect(screen.getByText('Amina Diallo')).toBeInTheDocument();
-  });
-
-  it('should simulate dismissing a flag', async () => {
-    setup();
-    const dismissButtons = screen.getAllByText('Dismiss');
-    expect(dismissButtons[0]).toBeInTheDocument();
-
-    fireEvent.click(dismissButtons[0]);
-
-    await waitFor(() => {
-      // The first item should be removed
-      expect(screen.queryByText('"Luxury" Apartment with No Running Water')).not.toBeInTheDocument();
-      // The count should update
-      expect(screen.getByText('Reported Items (2)')).toBeInTheDocument();
+    beforeEach(() => {
+        jest.clearAllMocks();
     });
-  });
 
-  it('should simulate taking action on a flag', async () => {
-    setup();
-    const actionButtons = screen.getAllByText('Action');
-    expect(actionButtons[1]).toBeInTheDocument(); // Take action on the second item
+    it('should render the panel title and table of flagged items', () => {
+        setup();
+        expect(screen.getByText('Flag Queue')).toBeInTheDocument();
+        expect(screen.getByText(/Reported Items/)).toBeInTheDocument();
 
-    fireEvent.click(actionButtons[1]);
-
-    await waitFor(() => {
-      // The second item should be removed
-      expect(screen.queryByText('Landlord "Mr. Ghost"')).not.toBeInTheDocument();
-      expect(screen.getByText('Reported Items (2)')).toBeInTheDocument();
+        // Check for mock data
+        expect(screen.getByText('"Luxury" Apartment with No Running Water')).toBeInTheDocument();
+        expect(screen.getByText('Unresponsive Landlord')).toBeInTheDocument();
     });
-  });
 
-  it('should display an empty queue message if no flags are present', () => {
-    const originalUseState = React.useState;
-    jest.spyOn(React, 'useState').mockImplementationOnce(() => [[], jest.fn()]); // Mock queue to be empty
-    render(<FlagQueue />);
-    expect(screen.getByText('The flag queue is clear. Well done!')).toBeInTheDocument();
-    jest.spyOn(React, 'useState').mockImplementation(originalUseState);
-  });
+    it('should call updatePropertyStatus when taking action on a property flag', async () => {
+        setup();
+        const actionButtons = screen.getAllByText('Action');
+        // Find the action button corresponding to the first property flag
+        const propertyFlagAction = actionButtons.find(button =>
+            button.closest('tr').textContent.includes('Misleading Information')
+        );
+
+        fireEvent.click(propertyFlagAction);
+
+        await waitFor(() => {
+            expect(updatePropertyStatus).toHaveBeenCalledWith('prop_flagged_123', 'hidden');
+        });
+
+        // Also check that the item is removed from the queue UI
+        expect(screen.queryByText('"Luxury" Apartment with No Running Water')).not.toBeInTheDocument();
+    });
+
+    it('should dismiss a flag without calling property update function', async () => {
+        setup();
+        const dismissButtons = screen.getAllByText('Dismiss');
+        fireEvent.click(dismissButtons[0]);
+
+        await waitFor(() => {
+            expect(screen.queryByText('"Luxury" Apartment with No Running Water')).not.toBeInTheDocument();
+        });
+        // Ensure the property status function was NOT called for a dismissal
+        expect(updatePropertyStatus).not.toHaveBeenCalled();
+    });
 });

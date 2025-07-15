@@ -173,8 +173,12 @@ const MessageBubble = ({ message, onQuickReply, onTranslate }) => {
         {/* Quick Replies */}
         {renderQuickReplies()}
 
-        {/* Message Status */}
-        {renderMessageStatus()}
+        {/* Timestamp for AI or Status for User */}
+        {message.sender === 'ai' ? (
+          <p className="text-xs text-muted-foreground mt-1">{formatTime(message.timestamp)}</p>
+        ) : (
+          renderMessageStatus()
+        )}
       </div>
     </div>
   );

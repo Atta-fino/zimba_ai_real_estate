@@ -17,6 +17,19 @@ const LanguageContext = React.createContext({
   setLanguage: () => {}
 });
 
+// Mock data for context that would normally come from props, context, or router state
+const mockChatContext = {
+  user: {
+    name: 'Amina',
+    role: 'renter',
+  },
+  property: { // This could be null if chat is initiated from a general page
+    id: 'prop1',
+    title: 'Modern Downtown Apartment',
+  }
+};
+
+
 const AIChatSupportInterface = () => {
   const navigate = useNavigate();
   const messagesEndRef = useRef(null);
@@ -37,7 +50,7 @@ const AIChatSupportInterface = () => {
   const translations = {
     en: {
       chatSupport: 'AI Chat Support',
-      welcomeMessage: `Hello! 👋 I'm Zimba AI, your real estate assistant.\n\nI'm here to help you with:\n🔒 Escrow services and status\n💳 FlexPay payment options\n✅ Landlord verification\n📅 Booking assistance\n📄 Document uploads\n\nHow can I assist you today?`,
+      welcomeMessage: `Hello there! I'm Zimba AI, your friendly guide to finding and securing your perfect space. 🏡\n\nI can help you with things like understanding escrow, checking on your booking, or learning about our FlexPay options.\n\nWhat's on your mind today?`,
       aiTyping: 'Zimba AI is typing...',
       connectionLost: 'Connection lost. Trying to reconnect...',
       reconnected: 'Reconnected successfully!'
@@ -89,9 +102,9 @@ const AIChatSupportInterface = () => {
           timestamp: new Date(Date.now() - 3600000),
           status: 'delivered',
           quickReplies: [
-            { text: '🔒 Check Escrow Status', icon: 'Shield', action: 'escrow_status' },
-            { text: '💳 FlexPay Info', icon: 'CreditCard', action: 'flexpay_info' },
-            { text: '✅ Verify Landlord', icon: 'UserCheck', action: 'verify_landlord' }
+            { text: 'How does Escrow work?', icon: 'Shield', action: 'escrow_info' },
+            { text: 'Tell me about FlexPay', icon: 'CreditCard', action: 'flexpay_info' },
+            { text: 'Why should I trust Zimba?', icon: 'BadgeCheck', action: 'trust_info' }
           ]
         },
         {
@@ -144,38 +157,66 @@ const AIChatSupportInterface = () => {
   // Simulate AI responses
   const simulateAIResponse = (userMessage) => {
     setIsTyping(true);
-    
-    setTimeout(() => {
-      const responses = {
-        escrow: `I can help you with escrow services! 🔒\n\nEscrow protects both buyers and landlords by holding funds securely until all conditions are met. Here's what you need to know:\n\n✅ Funds are held safely\n✅ Released only when both parties agree\n✅ Full transparency throughout\n\nWhat specific escrow question do you have?`,
-        flexpay: `FlexPay is our flexible payment solution! 💳\n\nWith FlexPay you can:\n• Split rent into smaller payments\n• Pay monthly instead of large upfront\n• Build your rental history\n• No hidden fees\n\nWould you like to enable FlexPay for your next booking?`,
-        verification: `Landlord verification is crucial for your safety! ✅\n\nOur verification process includes:\n🆔 ID verification\n🏠 Property ownership proof\n⭐ Previous tenant reviews\n📞 Contact verification\n\nLook for the blue verification badge on listings!`,
-        default: `I understand you're asking about "${userMessage}". Let me help you with that!\n\nIf this is a complex issue, I can connect you with our human support team via WhatsApp for personalized assistance. Would that be helpful?`
-      };
 
-      let responseKey = 'default';
-      if (userMessage.toLowerCase().includes('escrow')) responseKey = 'escrow';
-      else if (userMessage.toLowerCase().includes('flexpay') || userMessage.toLowerCase().includes('payment')) responseKey = 'flexpay';
-      else if (userMessage.toLowerCase().includes('verify') || userMessage.toLowerCase().includes('landlord')) responseKey = 'verification';
+    setTimeout(() => {
+      let response;
+      const lowerCaseMessage = userMessage.toLowerCase();
+
+      if (lowerCaseMessage.includes('escrow')) {
+        response = {
+          content: `Of course! Escrow is a secure financial arrangement where Zimba holds your payment until you've confirmed you're happy with the property (like after you've received the keys). This protects you from scams and ensures the landlord gets paid only when you're satisfied. It's like having a trusted middle-person for your peace of mind. 🤝`,
+          quickReplies: [
+            { text: "What happens after I pay?", action: 'escrow_next_steps' },
+            { text: "Is my money really safe?", action: 'escrow_safety' },
+          ]
+        };
+      } else if (lowerCaseMessage.includes('flexpay')) {
+        response = {
+          content: `FlexPay is our feature that makes paying rent easier! Instead of one large annual payment, landlords who enable FlexPay allow you to pay 3 months upfront, and then the rest in convenient monthly installments. It helps with your cash flow and budgeting! 💳`,
+          quickReplies: [
+            { text: "How do I find FlexPay properties?", action: 'flexpay_find' },
+            { text: "Are there extra fees?", action: 'flexpay_fees' },
+          ]
+        };
+      } else if (lowerCaseMessage.includes('trust')) {
+        response = {
+          content: `That's a great question! Trust is everything in real estate. We build it in a few key ways:\n\n1.  **Verification:** We verify landlords with ID and document checks.\n2.  **TrustScore:** Our scoring system rates users based on their reliability and responsiveness.\n3.  **Secure Escrow:** We protect your money until you confirm you're happy.\n\nThis helps create a safe and reliable community for everyone.`,
+          quickReplies: [
+            { text: "Tell me more about verification", action: 'verification_info' },
+            { text: "How is TrustScore calculated?", action: 'trustscore_info' },
+          ]
+        };
+      } else {
+        // Default response for unhandled questions, now with context
+        let defaultContent = `Hi ${mockChatContext.user.name}, that's a great question about "${userMessage}".`;
+
+        if (mockChatContext.property?.title) {
+            defaultContent += ` Are you asking in relation to the "${mockChatContext.property.title}" listing?`;
+        }
+
+        defaultContent += `\n\nWhile I'm still learning, I can connect you with our human support team for detailed help. Would you like that?`;
+
+        response = {
+          content: defaultContent,
+          quickReplies: [
+            { text: 'Yes, connect me to support', icon: 'MessageCircle', action: 'whatsapp_handoff' },
+            { text: 'No, I\'ll ask something else', icon: 'RotateCcw', action: 'retry' }
+          ]
+        };
+      }
 
       const aiResponse = {
         id: `msg-${Date.now()}`,
         sender: 'ai',
-        content: responses[responseKey],
+        content: response.content,
         timestamp: new Date(),
         status: 'delivered',
-        quickReplies: responseKey === 'default' ? [
-          { text: 'Connect to WhatsApp', icon: 'MessageCircle', action: 'whatsapp_handoff' },
-          { text: 'Try Again', icon: 'RotateCcw', action: 'retry' }
-        ] : [
-          { text: 'More Info', icon: 'Info', action: 'more_info' },
-          { text: 'Book Property', icon: 'Calendar', action: 'book_property' }
-        ]
+        quickReplies: response.quickReplies || []
       };
 
       setCurrentMessages(prev => [...prev, aiResponse]);
       setIsTyping(false);
-    }, 2000);
+    }, 1500);
   };
 
   const handleSendMessage = (message) => {

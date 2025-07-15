@@ -9,12 +9,18 @@ jest.mock('../../../components/ui/Header', () => () => <header>Header</header>);
 jest.mock('../../../components/ui/PrimaryTabNavigation', () => () => <nav>Primary Nav</nav>);
 jest.mock('../../../components/ui/FloatingChatButton', () => () => null); // Hide the button on this page
 
-// Mock sub-components of the chat interface to simplify testing the main page logic
-// We can test these individually if needed. For now, we test their integration.
-// To make this test work, we need to not mock the core chat components.
-// So we will mock only the top-level layout components.
+// To make this test work, we need to not mock the core chat components, just the page layout.
+// We also need to mock the MessageInput to check for its props and state changes.
 
-describe('AIChatSupportInterface Page', () => {
+// Mock child components
+jest.mock('../../../components/ui/Header', () => () => <header>Header</header>);
+jest.mock('../../../components/ui/PrimaryTabNavigation', () => () => <nav>Primary Nav</nav>);
+jest.mock('../../../components/ui/FloatingChatButton', () => () => null);
+// Let's mock MessageInput to have more control over its interactions
+jest.mock('../components/MessageInput', () => require('../__mocks__/MessageInput.mock').default);
+
+
+describe('AIChatSupportInterface Page - Enhanced Interactivity', () => {
   const setup = () => {
     render(
       <MemoryRouter>
@@ -23,53 +29,72 @@ describe('AIChatSupportInterface Page', () => {
     );
   };
 
-  it('should render the chat interface with a welcome message', () => {
+  beforeEach(() => {
+     // Reset mocks before each test
+    jest.clearAllMocks();
+  });
+
+  it('should render the refined welcome message and quick replies', () => {
     setup();
     expect(screen.getByText('AI Chat Support')).toBeInTheDocument();
 
-    // Check for the welcome message from the mock data
-    expect(screen.getByText(/Hello! 👋 I'm Zimba AI, your real estate assistant./i)).toBeInTheDocument();
+    // Check for the new, warmer welcome message
+    expect(screen.getByText(/Hello there! I'm Zimba AI, your friendly guide/i)).toBeInTheDocument();
 
-    // Check for quick reply buttons
-    expect(screen.getByText('🔒 Check Escrow Status')).toBeInTheDocument();
+    // Check for the new quick reply buttons
+    expect(screen.getByText('How does Escrow work?')).toBeInTheDocument();
+    expect(screen.getByText('Tell me about FlexPay')).toBeInTheDocument();
+    expect(screen.getByText('Why should I trust Zimba?')).toBeInTheDocument();
   });
 
-  it('should allow a user to send a message and receive a simulated AI response', async () => {
+  it('should handle multi-step AI responses for a quick reply', async () => {
     setup();
 
-    const input = screen.getByPlaceholderText('Type your message...');
-    const sendButton = screen.getByTestId('send-button'); // Assuming MessageInput has a button with this test-id
-
-    // User types and sends a message
-    fireEvent.change(input, { target: { value: 'Tell me about escrow' } });
-    fireEvent.click(sendButton);
+    // User clicks the first quick reply
+    fireEvent.click(screen.getByText('How does Escrow work?'));
 
     // The user's message should appear
-    await screen.findByText('Tell me about escrow');
+    await screen.findByText('How does Escrow work?');
 
-    // An AI typing indicator should appear
-    expect(screen.getByText('Zimba AI is typing...')).toBeInTheDocument();
-
-    // After a delay, the AI response should appear
+    // The first AI response should appear after a delay
     await waitFor(() => {
-      expect(screen.getByText(/I can help you with escrow services!/i)).toBeInTheDocument();
-    }, { timeout: 3000 }); // Wait for the 2s timeout in simulateAIResponse
+      expect(screen.getByText(/Of course! Escrow is a secure financial arrangement/i)).toBeInTheDocument();
+    }, { timeout: 2000 });
 
-    // Typing indicator should disappear
-    expect(screen.queryByText('Zimba AI is typing...')).not.toBeInTheDocument();
+    // The AI's response should have its own set of follow-up quick replies
+    expect(screen.getByText('What happens after I pay?')).toBeInTheDocument();
+    expect(screen.getByText('Is my money really safe?')).toBeInTheDocument();
   });
 
-  it('should handle quick reply clicks', async () => {
+  it('should provide a contextual response using mock user and property data', async () => {
     setup();
-    const quickReplyButton = screen.getByText('💳 FlexPay Info');
-    fireEvent.click(quickReplyButton);
+    // Use the mock for the MessageInput component to simulate sending a message
+    const { sendMessage } = require('../components/MessageInput').__getMocks();
+    sendMessage('This is a test message');
 
-    // The quick reply text should appear as a user message
-    await screen.findByText('💳 FlexPay Info');
+    // The user's message appears
+    await screen.findByText('This is a test message');
 
-    // An AI response should follow
+    // The default AI response should now be contextual
     await waitFor(() => {
-      expect(screen.getByText(/FlexPay is our flexible payment solution!/i)).toBeInTheDocument();
-    }, { timeout: 3000 });
+        // It should use the mock user's name ('Amina')
+        // and the mock property's title ('Modern Downtown Apartment')
+        const response = screen.getByText(/Hi Amina, that's a great question about "This is a test message"./i);
+        expect(response).toBeInTheDocument();
+        expect(response.textContent).toContain('Are you asking in relation to the "Modern Downtown Apartment" listing?');
+    }, { timeout: 2000 });
+  });
+
+  it('should simulate voice-to-text input', async () => {
+    setup();
+    const { getMicButton, getMessageInput } = require('../components/MessageInput').__getMocks();
+    const micButton = getMicButton();
+
+    fireEvent.click(micButton);
+
+    // The input should be populated with the mock transcribed text after a delay
+    await waitFor(() => {
+        expect(getMessageInput().value).toBe("Tell me more about the security features of this property.");
+    }, { timeout: 3000 }); // Wait for the 2.5s timeout in the simulation
   });
 });

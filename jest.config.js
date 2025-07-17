@@ -1,8 +1,11 @@
 module.exports = {
   testEnvironment: 'jsdom',
   transform: {
-    '^.+\\.(ts|tsx)$': 'ts-jest',
+    '^.+\\.(ts|tsx|js|jsx)$': 'ts-jest',
   },
+  transformIgnorePatterns: [
+    "node_modules/(?!recharts)"
+  ],
   moduleNameMapper: {
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
   },

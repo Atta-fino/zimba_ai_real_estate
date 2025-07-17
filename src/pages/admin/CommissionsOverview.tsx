@@ -39,6 +39,9 @@ const CommissionsOverview = () => {
       if (filters.type) {
         query = query.eq('type', filters.type);
       }
+      if (filters.commission_for) {
+        query = query.eq('commission_for', filters.commission_for);
+      }
       // Add other filters here
 
       const { data, error } = await query;
@@ -75,7 +78,32 @@ const CommissionsOverview = () => {
   return (
     <div className="p-4">
       <h1 className="text-2xl font-bold mb-4">Commissions Overview</h1>
-      {/* Add filter inputs here */}
+      <div className="flex space-x-4 mb-4">
+        <input
+            type="date"
+            name="dateRange.start"
+            value={filters.dateRange.start}
+            onChange={handleFilterChange}
+            className="border p-2"
+        />
+        <input
+            type="date"
+            name="dateRange.end"
+            value={filters.dateRange.end}
+            onChange={handleFilterChange}
+            className="border p-2"
+        />
+        <select name="type" value={filters.type} onChange={handleFilterChange} className="border p-2">
+            <option value="">All Types</option>
+            <option value="rent">Rent</option>
+            <option value="sale">Sale</option>
+        </select>
+        <select name="commission_for" value={filters.commission_for} onChange={handleFilterChange} className="border p-2">
+            <option value="">All</option>
+            <option value="platform">Platform</option>
+            <option value="agent">Agent</option>
+        </select>
+      </div>
       <button onClick={exportToCsv} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
         Export to CSV
       </button>

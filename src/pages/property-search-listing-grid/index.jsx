@@ -11,6 +11,8 @@ import LoadingSkeleton from './components/LoadingSkeleton';
 import EmptyState from './components/EmptyState';
 import Icon from '../../components/AppIcon';
 import Button from '../../components/ui/Button';
+import Mapbox from '../../components/Mapbox';
+import { Marker } from 'react-map-gl';
 
 // Language Context
 const LanguageContext = React.createContext({
@@ -126,7 +128,9 @@ const PropertySearchListingGrid = () => {
       amenities: ['Parking', 'Security', 'Swimming Pool'],
       landlordResponsive: true,
       virtualTour: true,
-      favorite: false
+      favorite: false,
+      latitude: 6.4281,
+      longitude: 3.4214
     },
     {
       id: 2,
@@ -142,7 +146,9 @@ const PropertySearchListingGrid = () => {
       amenities: ['WiFi', 'Kitchen', 'AC'],
       landlordResponsive: false,
       virtualTour: false,
-      favorite: true
+      favorite: true,
+      latitude: 6.6018,
+      longitude: 3.3515
     }
   ];
 
@@ -362,13 +368,15 @@ const PropertySearchListingGrid = () => {
               )}
             </>
           ) : (
-            /* Map View Placeholder */
-            <div className="h-96 bg-muted rounded-lg flex items-center justify-center">
-              <div className="text-center">
-                <Icon name="Map" size={48} className="mx-auto mb-4 text-muted-foreground" />
-                <p className="text-muted-foreground">Map view coming soon</p>
-              </div>
-            </div>
+            <Mapbox
+              latitude={6.5244}
+              longitude={3.3792}
+              style={{ width: '100%', height: 'calc(100vh - 200px)' }}
+            >
+              {sortedProperties.map(property => (
+                <Marker key={property.id} longitude={property.longitude} latitude={property.latitude} />
+              ))}
+            </Mapbox>
           )}
         </div>
       </main>

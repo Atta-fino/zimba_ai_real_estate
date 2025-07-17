@@ -9,7 +9,20 @@ serve(async (req) => {
   try {
     const { user_id, payment_token } = await req.json()
 
-    // TODO: Process payment with Flutterwave or Stripe
+    const Flutterwave = require('flutterwave-node-v3');
+    const flw = new Flutterwave(process.env.FLUTTERWAVE_PUBLIC_KEY, process.env.FLUTTERWAVE_SECRET_KEY);
+
+    try {
+        const response = await flw.Tokenized.charge({
+            token: payment_token,
+            currency: "NGN",
+            amount: 5000,
+            email: "user@gmail.com",
+            tx_ref: `verified_agent_${user_id}`
+        });
+    } catch (error) {
+        throw new Error(`Payment failed: ${error.message}`)
+    }
 
     const { error } = await supabase
         .from('users')

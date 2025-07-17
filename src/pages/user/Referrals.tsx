@@ -50,6 +50,17 @@ const Referrals = ({ userId }) => {
           Invite
         </button>
       </div>
+      <div className="mt-4 flex space-x-4">
+        <a href={`https://wa.me/?text=Join Zimba and get a ₵5 boost! Use my referral code: ${userId}`} target="_blank" rel="noopener noreferrer" className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+            Share on WhatsApp
+        </a>
+        <a href={`https://www.facebook.com/sharer/sharer.php?u=https://zimba.com/referral?code=${userId}`} target="_blank" rel="noopener noreferrer" className="bg-blue-800 hover:bg-blue-900 text-white font-bold py-2 px-4 rounded">
+            Share on Facebook
+        </a>
+        <a href={`sms:?body=Join Zimba and get a ₵5 boost! Use my referral code: ${userId}`} className="bg-orange-500 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded">
+            Share via SMS
+        </a>
+      </div>
       <table className="w-full">
         <thead>
           <tr>

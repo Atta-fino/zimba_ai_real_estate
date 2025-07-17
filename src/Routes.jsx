@@ -9,6 +9,8 @@ import AiChatSupportInterface from "pages/ai-chat-support-interface";
 import UserRegistrationAuthentication from "pages/user-registration-authentication";
 import PropertySearchListingGrid from "pages/property-search-listing-grid";
 import NotFound from "pages/NotFound";
+import OnboardingFlowController from "pages/onboarding/OnboardingFlowController";
+import Dashboard from "pages/dashboard/Dashboard";
 
 const Routes = () => {
   return (
@@ -23,6 +25,8 @@ const Routes = () => {
         <Route path="/ai-chat-support-interface" element={<AiChatSupportInterface />} />
         <Route path="/user-registration-authentication" element={<UserRegistrationAuthentication />} />
         <Route path="/property-search-listing-grid" element={<PropertySearchListingGrid />} />
+        <Route path="/onboarding" element={<OnboardingFlowController />} />
+        <Route path="/dashboard" element={<Dashboard />} />
         <Route path="*" element={<NotFound />} />
       </RouterRoutes>
       </ErrorBoundary>

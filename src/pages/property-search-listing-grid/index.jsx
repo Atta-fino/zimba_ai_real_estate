@@ -12,7 +12,11 @@ import EmptyState from './components/EmptyState';
 import Icon from '../../components/AppIcon';
 import Button from '../../components/ui/Button';
 import Mapbox from '../../components/Mapbox';
-import { Marker } from 'react-map-gl';
+import { Marker, Popup } from 'react-map-gl';
+import useSupercluster from 'use-supercluster';
+import { FlyToInterpolator } from 'react-map-gl';
+import DrawControl from '../../components/DrawControl';
+import * as turf from '@turf/turf';
 
 // Language Context
 const LanguageContext = React.createContext({
@@ -20,6 +24,30 @@ const LanguageContext = React.createContext({
 });
 
 const PropertySearchListingGrid = () => {
+  const [selectedProperty, setSelectedProperty] = useState(null);
+  const [viewport, setViewport] = useState({
+    latitude: 6.5244,
+    longitude: 3.3792,
+    zoom: 10
+  });
+  const points = sortedProperties.map(property => ({
+    type: "Feature",
+    properties: {
+      cluster: false,
+      propertyId: property.id,
+      ...property
+    },
+    geometry: {
+      type: "Point",
+      coordinates: [property.longitude, property.latitude]
+    }
+  }));
+  const { clusters, supercluster } = useSupercluster({
+    points,
+    bounds: viewport.bounds,
+    zoom: viewport.zoom,
+    options: { radius: 75, maxZoom: 20 }
+  });
   const location = useLocation();
   const navigate = useNavigate();
   const { language } = useContext(LanguageContext);
@@ -230,8 +258,19 @@ const PropertySearchListingGrid = () => {
     setSelectedFilters(newFilters);
   };
 
-  const handleSearchChange = (query) => {
+  const handleSearchChange = async (query) => {
     setSearchQuery(query);
+
+    if (query) {
+      const response = await fetch(
+        `https://api.mapbox.com/geocoding/v5/mapbox.places/${query}.json?access_token=${process.env.REACT_APP_MAPBOX_TOKEN}`
+      );
+      const data = await response.json();
+      if (data.features.length > 0) {
+        const [longitude, latitude] = data.features[0].center;
+        setViewport({ ...viewport, latitude, longitude, zoom: 12 });
+      }
+    }
   };
 
   const clearAllFilters = () => {
@@ -369,13 +408,84 @@ const PropertySearchListingGrid = () => {
             </>
           ) : (
             <Mapbox
-              latitude={6.5244}
-              longitude={3.3792}
+              {...viewport}
+              onMove={evt => setViewport(evt.viewState)}
               style={{ width: '100%', height: 'calc(100vh - 200px)' }}
             >
-              {sortedProperties.map(property => (
-                <Marker key={property.id} longitude={property.longitude} latitude={property.latitude} />
-              ))}
+              {clusters.map(cluster => {
+                const [longitude, latitude] = cluster.geometry.coordinates;
+                const { cluster: isCluster, point_count: pointCount } = cluster.properties;
+
+                if (isCluster) {
+                  return (
+                    <Marker key={cluster.id} latitude={latitude} longitude={longitude}>
+                      <div
+                        className="cluster-marker"
+                        style={{
+                            width: `${10 + (pointCount / points.length) * 20}px`,
+                            height: `${10 + (pointCount / points.length) * 20}px`,
+                        }}
+                        onClick={() => {
+                            const expansionZoom = Math.min(
+                                supercluster.getClusterExpansionZoom(cluster.id),
+                                20
+                            );
+                            setViewport({
+                                ...viewport,
+                                latitude,
+                                longitude,
+                                zoom: expansionZoom,
+                                transitionInterpolator: new FlyToInterpolator({
+                                    speed: 2
+                                }),
+                                transitionDuration: 'auto'
+                            })
+                        }}
+                      >
+                        {pointCount}
+                      </div>
+                    </Marker>
+                  );
+                }
+
+                return (
+                    <Marker
+                        key={cluster.properties.propertyId}
+                        longitude={longitude}
+                        latitude={latitude}
+                        onClick={() => setSelectedProperty(cluster.properties)}
+                    />
+                )
+              })}
+              <DrawControl
+                position="top-left"
+                displayControlsDefault={false}
+                controls={{
+                  polygon: true,
+                  trash: true
+                }}
+                onCreate={e => {
+                    const polygon = e.features[0];
+                    const filtered = properties.filter(p => {
+                        const point = turf.point([p.longitude, p.latitude]);
+                        return turf.booleanPointInPolygon(point, polygon);
+                    });
+                    setProperties(filtered);
+                }}
+              />
+              {selectedProperty && (
+                <Popup
+                  longitude={selectedProperty.longitude}
+                  latitude={selectedProperty.latitude}
+                  onClose={() => setSelectedProperty(null)}
+                  closeOnClick={false}
+                >
+                  <div>
+                    <h2>{selectedProperty.title}</h2>
+                    <p>{selectedProperty.price} {selectedProperty.currency}</p>
+                  </div>
+                </Popup>
+              )}
             </Mapbox>
           )}
         </div>

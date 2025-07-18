@@ -158,7 +158,10 @@ const PropertySearchListingGrid = () => {
       virtualTour: true,
       favorite: false,
       latitude: 6.4281,
-      longitude: 3.4214
+      longitude: 3.4214,
+      landlord: {
+        verification_status: 'approved'
+      }
     },
     {
       id: 2,
@@ -176,7 +179,10 @@ const PropertySearchListingGrid = () => {
       virtualTour: false,
       favorite: true,
       latitude: 6.6018,
-      longitude: 3.3515
+      longitude: 3.3515,
+      landlord: {
+        verification_status: 'pending'
+      }
     }
   ];
 

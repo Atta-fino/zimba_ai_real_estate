@@ -21,13 +21,38 @@ serve(async (req) => {
         throw new Error(`Error inserting biometric verification request: ${insertError.message}`)
     }
 
-    // Simulate a call to a third-party API
-    const isVerified = Math.random() > 0.5
+    const faceapi = require('face-api.js');
+    const canvas = require('canvas');
+
+    const { Canvas, Image, ImageData } = canvas;
+    faceapi.env.monkeyPatch({ Canvas, Image, ImageData });
+
+    await faceapi.nets.ssdMobilenetv1.loadFromUri('/models');
+    await faceapi.nets.faceLandmark68Net.loadFromUri('/models');
+    await faceapi.nets.faceRecognitionNet.loadFromUri('/models');
+
+    const idImage = await canvas.loadImage(id_image_url);
+    const biometricImage = await canvas.loadImage(biometric_data);
+
+    const idImageDetections = await faceapi.detectAllFaces(idImage).withFaceLandmarks().withFaceDescriptors();
+    const biometricImageDetections = await faceapi.detectAllFaces(biometricImage).withFaceLandmarks().withFaceDescriptors();
+
+    const faceMatcher = new faceapi.FaceMatcher(idImageDetections);
+    const bestMatch = faceMatcher.findBestMatch(biometricImageDetections[0].descriptor);
+
+    const isVerified = bestMatch.label !== 'unknown';
 
     const { error: updateError } = await supabase
         .from('biometric_verifications')
         .update({ status: isVerified ? 'approved' : 'rejected', processed_at: new Date() })
         .eq('user_id', user_id)
+
+    if (isVerified) {
+        await supabase
+            .from('users')
+            .update({ verification_status: 'approved' })
+            .eq('id', user_id)
+    }
 
     if (updateError) {
         throw new Error(`Error updating biometric verification request: ${updateError.message}`)

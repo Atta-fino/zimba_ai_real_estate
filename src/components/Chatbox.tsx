@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.REACT_APP_SUPABASE_URL;
@@ -8,6 +8,7 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 const Chatbox = () => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
+  const [isListening, setIsListening] = useState(false);
 
   const handleSendMessage = async () => {
     if (!input) return;
@@ -26,6 +27,32 @@ const Chatbox = () => {
         setMessages([...newMessages, { text: data.reply, sender: 'bot' }]);
     }
   };
+
+  useEffect(() => {
+    if (!isListening) {
+      return;
+    }
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = 'en-US';
+
+    recognition.onresult = (event) => {
+      const transcript = Array.from(event.results)
+        .map((result) => result[0])
+        .map((result) => result.transcript)
+        .join('');
+      setInput(transcript);
+    };
+
+    recognition.start();
+
+    return () => {
+      recognition.stop();
+    };
+  }, [isListening]);
 
   return (
     <div className="p-4 border rounded-lg">
@@ -48,7 +75,11 @@ const Chatbox = () => {
             <option value="yo">Yoruba</option>
             <option value="pcm">Pidgin</option>
         </select>
-        <button className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
+        <button
+            onClick={() => setIsListening(prevState => !prevState)}
+            className={`font-bold py-2 px-4 rounded ${isListening ? 'bg-red-500 hover:bg-red-700' : 'bg-gray-500 hover:bg-gray-700'} text-white`}
+            aria-label="mic"
+        >
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-mic"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
         </button>
       </div>

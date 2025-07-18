@@ -9,11 +9,26 @@ serve(async (req) => {
 
     const sessionPath = sessionClient.projectAgentSessionPath(process.env.DIALOGFLOW_PROJECT_ID, '123456');
 
+    const { Translate } = require('@google-cloud/translate').v2;
+    const translate = new Translate();
+
+    const text = messages[messages.length - 1].text;
+    const target = 'en';
+
+    const [detection] = await translate.detect(text);
+    const language = detection.language;
+
+    let translatedText = text;
+    if (language !== target) {
+        const [translation] = await translate.translate(text, target);
+        translatedText = translation;
+    }
+
     const request = {
         session: sessionPath,
         queryInput: {
             text: {
-                text: messages[messages.length - 1].text,
+                text: translatedText,
                 languageCode: 'en-US',
             },
         },

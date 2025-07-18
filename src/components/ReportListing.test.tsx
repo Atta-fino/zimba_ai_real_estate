@@ -12,6 +12,7 @@ jest.mock('@supabase/supabase-js', () => ({
 }));
 
 test('renders report listing button', () => {
+  global.alert = jest.fn();
   render(<ReportListing propertyId="123" userId="456" />);
 
   expect(screen.getByText('Report Listing')).toBeInTheDocument();

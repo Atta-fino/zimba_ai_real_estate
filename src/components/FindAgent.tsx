@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import Mapbox from './Mapbox';
+import { Marker } from 'react-map-gl';
 import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.REACT_APP_SUPABASE_URL;
@@ -38,12 +40,24 @@ const FindAgent = () => {
         </button>
       </div>
       <div className="mt-4">
-        {agents.map((agent) => (
-          <div key={agent.id} className="p-2 border-b">
-            <p className="font-bold">{agent.name}</p>
-            <p>{agent.location}</p>
-          </div>
-        ))}
+        <div className="grid grid-cols-2 gap-4">
+            <div>
+                {agents.map((agent) => (
+                <div key={agent.id} className="p-2 border-b">
+                    <p className="font-bold">{agent.name}</p>
+                    <p>{agent.location}</p>
+                    {/* Add rating display and form here */}
+                </div>
+                ))}
+            </div>
+            <div className="h-96">
+                <Mapbox latitude={6.5244} longitude={3.3792}>
+                    {agents.map(agent => (
+                        <Marker key={agent.id} longitude={agent.longitude} latitude={agent.latitude} />
+                    ))}
+                </Mapbox>
+            </div>
+        </div>
       </div>
     </div>
   );

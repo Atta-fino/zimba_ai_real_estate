@@ -4,7 +4,7 @@ module.exports = {
     '^.+\\.(ts|tsx|js|jsx)$': 'ts-jest',
   },
   transformIgnorePatterns: [
-    "node_modules/(?!recharts)"
+    "node_modules/(?!recharts|@supabase)"
   ],
   moduleNameMapper: {
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',

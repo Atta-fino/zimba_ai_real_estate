@@ -15,6 +15,13 @@ jest.mock('@supabase/supabase-js', () => ({
   })),
 }));
 
+// Mock Mapbox
+jest.mock('./Mapbox', () => () => <div data-testid="mapbox" />);
+jest.mock('react-map-gl', () => ({
+    Marker: (props) => <div data-testid="marker" {...props} />
+}));
+
+
 test('renders find agent correctly', () => {
   render(<FindAgent />);
 

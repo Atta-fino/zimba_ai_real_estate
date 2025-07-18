@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 const MortgageCalculator = () => {
   const [principal, setPrincipal] = useState(100000);
   const [interestRate, setInterestRate] = useState(5);
   const [loanTerm, setLoanTerm] = useState(30);
   const [monthlyPayment, setMonthlyPayment] = useState(0);
+  const [amortization, setAmortization] = useState([]);
 
   const calculateMonthlyPayment = () => {
     const monthlyInterestRate = interestRate / 100 / 12;
@@ -14,6 +16,21 @@ const MortgageCalculator = () => {
       (monthlyInterestRate * Math.pow(1 + monthlyInterestRate, numberOfPayments)) /
       (Math.pow(1 + monthlyInterestRate, numberOfPayments) - 1);
     setMonthlyPayment(payment);
+
+    let balance = principal;
+    const newAmortization = [];
+    for (let i = 0; i < numberOfPayments; i++) {
+        const interest = balance * monthlyInterestRate;
+        const principalPaid = payment - interest;
+        balance -= principalPaid;
+        newAmortization.push({
+            month: i + 1,
+            interest,
+            principal: principalPaid,
+            balance
+        });
+    }
+    setAmortization(newAmortization);
   };
 
   return (
@@ -52,6 +69,20 @@ const MortgageCalculator = () => {
       {monthlyPayment > 0 && (
         <div className="mt-4">
           <p>Monthly Payment: {monthlyPayment.toFixed(2)}</p>
+        </div>
+      )}
+      {amortization.length > 0 && (
+        <div className="mt-4">
+            <ResponsiveContainer width="100%" height={400}>
+                <LineChart data={amortization}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="month" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Line type="monotone" dataKey="balance" stroke="#8884d8" />
+                </LineChart>
+            </ResponsiveContainer>
         </div>
       )}
     </div>

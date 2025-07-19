@@ -107,6 +107,23 @@ const MessageInput = ({ onSendMessage, onAttachment, isTyping, disabled }) => {
     setShowTemplates(false);
   };
 
+  const [isListening, setIsListening] = useState(false);
+  const handleVoiceInput = () => {
+      if (isListening) {
+          setIsListening(false);
+          // In a real app, stop speech recognition here.
+          return;
+      }
+      setIsListening(true);
+      // In a real app, start speech recognition here.
+
+      // Simulate receiving voice input after a delay
+      setTimeout(() => {
+          setMessage("Tell me more about the security features of this property.");
+          setIsListening(false);
+      }, 2500); // Simulate 2.5s of listening
+  };
+
   const handleFileSelect = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -188,12 +205,24 @@ const MessageInput = ({ onSendMessage, onAttachment, isTyping, disabled }) => {
             variant="default"
             size="sm"
             onClick={handleSend}
-            disabled={!message.trim() || disabled}
+            disabled={!message.trim() || disabled || isListening}
             className="p-2"
             title={t.send}
+            data-testid="send-button"
           >
             <Icon name="Send" size={20} />
           </Button>
+
+           {/* Voice Input Button */}
+           <Button
+                variant={isListening ? "destructive" : "ghost"}
+                size="sm"
+                onClick={handleVoiceInput}
+                className="p-2"
+                title="Use voice input"
+            >
+                <Icon name="Mic" size={20} className={isListening ? 'animate-pulse' : ''}/>
+           </Button>
         </div>
 
         {/* Hidden File Input */}

@@ -11,6 +11,9 @@ import LoadingSkeleton from './components/LoadingSkeleton';
 import EmptyState from './components/EmptyState';
 import Icon from '../../components/AppIcon';
 import Button from '../../components/ui/Button';
+import MapboxView from '../../components/MapboxView';
+import OfflineState from '../../components/ui/OfflineState';
+import { mockPropertiesData } from '../../data/mockProperties'; // Import the central properties store
 
 // Language Context
 const LanguageContext = React.createContext({
@@ -38,6 +41,7 @@ const PropertySearchListingGrid = () => {
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
+  const [isOffline, setIsOffline] = useState(false); // Add offline state
 
   // Translations
   const translations = {
@@ -110,44 +114,13 @@ const PropertySearchListingGrid = () => {
 
   const t = translations[language] || translations.en;
 
-  // Mock property data
-  const mockProperties = [
-    {
-      id: 1,
-      title: 'Modern 2-Bedroom Apartment',
-      price: 850000,
-      currency: 'NGN',
-      location: 'Victoria Island, Lagos',
-      propertyType: 'Apartments',
-      images: ['/assets/images/no_image.png'],
-      trustScore: 4.8,
-      verified: true,
-      features: ['2 Beds', '2 Baths', '85 sqm'],
-      amenities: ['Parking', 'Security', 'Swimming Pool'],
-      landlordResponsive: true,
-      virtualTour: true,
-      favorite: false
-    },
-    {
-      id: 2,
-      title: 'Luxury Self-Contain Studio',
-      price: 450000,
-      currency: 'NGN',
-      location: 'Ikeja GRA, Lagos',
-      propertyType: 'Self-Contain',
-      images: ['/assets/images/no_image.png'],
-      trustScore: 4.5,
-      verified: true,
-      features: ['1 Bed', '1 Bath', '45 sqm'],
-      amenities: ['WiFi', 'Kitchen', 'AC'],
-      landlordResponsive: false,
-      virtualTour: false,
-      favorite: true
-    }
-  ];
-
   // Filter properties based on current filters and search
   const filteredProperties = properties.filter(property => {
+    // Exclude hidden properties from public view
+    if (property.status === 'hidden') {
+      return false;
+    }
+
     const matchesSearch = !searchQuery || 
       property.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       property.location.toLowerCase().includes(searchQuery.toLowerCase());
@@ -193,7 +166,7 @@ const PropertySearchListingGrid = () => {
       setLoading(true);
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
-      setProperties(mockProperties);
+      setProperties(mockPropertiesData); // Use the central mock data store
       setLoading(false);
     };
 
@@ -219,10 +192,6 @@ const PropertySearchListingGrid = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, [loadingMore, hasMore, sortedProperties.length]);
-
-  const handleFilterChange = (newFilters) => {
-    setSelectedFilters(newFilters);
-  };
 
   const handleSearchChange = (query) => {
     setSearchQuery(query);
@@ -327,6 +296,7 @@ const PropertySearchListingGrid = () => {
 
         {/* Content Area */}
         <div className="px-4 lg:px-6 py-6">
+          {isOffline && <div className="mb-6"><OfflineState onRetry={() => console.log("Retrying connection...")}/></div>}
           {loading ? (
             <LoadingSkeleton />
           ) : sortedProperties.length === 0 ? (
@@ -362,12 +332,9 @@ const PropertySearchListingGrid = () => {
               )}
             </>
           ) : (
-            /* Map View Placeholder */
-            <div className="h-96 bg-muted rounded-lg flex items-center justify-center">
-              <div className="text-center">
-                <Icon name="Map" size={48} className="mx-auto mb-4 text-muted-foreground" />
-                <p className="text-muted-foreground">Map view coming soon</p>
-              </div>
+            /* Map View */
+            <div className="h-[calc(100vh-250px)]"> {/* Adjust height to fill available space */}
+                <MapboxView properties={sortedProperties} />
             </div>
           )}
         </div>

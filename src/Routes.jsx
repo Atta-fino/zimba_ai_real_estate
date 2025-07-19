@@ -19,6 +19,8 @@ import LoginPage from "pages/login";
 import AdminDashboardPage from "pages/admin-dashboard";
 import BookingFlowPage from "pages/booking-flow"; // Import Booking Flow Page
 import NotFound from "pages/NotFound";
+import OnboardingFlowController from "pages/onboarding/OnboardingFlowController";
+import Dashboard from "pages/dashboard/Dashboard";
 
 const Routes = () => {
   return (
@@ -35,15 +37,20 @@ const Routes = () => {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/user-registration-authentication" element={<UserRegistrationAuthentication />} />
         <Route path="/property-search-listing-grid" element={<PropertySearchListingGrid />} />
-        <Route path="/property-detail-view/:id" element={<PropertyDetailView />} />
-        <Route path="/profile" element={<UserProfilePage />} />
-        <Route path="/landlord-dashboard" element={<LandlordDashboardPage />} />
-        <Route path="/landlord-dashboard/properties/new" element={<PropertyEditorPage />} />
-        <Route path="/landlord-dashboard/properties/edit/:propertyId" element={<PropertyEditorPage />} />
-        {/* Admin Dashboard Main Route - it will handle sub-panel rendering */}
-        <Route path="/admin/*" element={<AdminDashboardPage />} />
-        <Route path="/dashboard" element={<RenterDashboardPage />} />
-        <Route path="/book/:propertyId" element={<BookingFlowPage />} /> {/* Booking Flow */}
+<Route path="/onboarding" element={<OnboardingFlowController />} />
+<Route path="/dashboard" element={<Dashboard />} />
+
+<Route path="/renter-dashboard" element={<RenterDashboardPage />} />
+<Route path="/landlord-dashboard" element={<LandlordDashboardPage />} />
+<Route path="/landlord-dashboard/properties/new" element={<PropertyEditorPage />} />
+<Route path="/landlord-dashboard/properties/edit/:propertyId" element={<PropertyEditorPage />} />
+
+<Route path="/admin/*" element={<AdminDashboardPage />} />
+<Route path="/property-detail-view/:id" element={<PropertyDetailView />} />
+<Route path="/profile" element={<UserProfilePage />} />
+<Route path="/book/:propertyId" element={<BookingFlowPage />} />
+
+<Route path="/dashboard" element={<RoleBasedDashboardRedirect />} />
         <Route path="*" element={<NotFound />} />
       </RouterRoutes>
       </ErrorBoundary>

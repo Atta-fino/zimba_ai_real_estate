@@ -11,9 +11,18 @@ import LoadingSkeleton from './components/LoadingSkeleton';
 import EmptyState from './components/EmptyState';
 import Icon from '../../components/AppIcon';
 import Button from '../../components/ui/Button';
+// From feat/commission-system
+import Mapbox from '../../components/Mapbox';
+import { Marker, Popup } from 'react-map-gl';
+import useSupercluster from 'use-supercluster';
+import { FlyToInterpolator } from 'react-map-gl';
+import DrawControl from '../../components/DrawControl';
+import * as turf from '@turf/turf';
+
+// From main
 import MapboxView from '../../components/MapboxView';
 import OfflineState from '../../components/ui/OfflineState';
-import { mockPropertiesData } from '../../data/mockProperties'; // Import the central properties store
+import { mockPropertiesData } from '../../data/mockProperties';
 
 // Language Context
 const LanguageContext = React.createContext({
@@ -21,6 +30,30 @@ const LanguageContext = React.createContext({
 });
 
 const PropertySearchListingGrid = () => {
+  const [selectedProperty, setSelectedProperty] = useState(null);
+  const [viewport, setViewport] = useState({
+    latitude: 6.5244,
+    longitude: 3.3792,
+    zoom: 10
+  });
+  const points = sortedProperties.map(property => ({
+    type: "Feature",
+    properties: {
+      cluster: false,
+      propertyId: property.id,
+      ...property
+    },
+    geometry: {
+      type: "Point",
+      coordinates: [property.longitude, property.latitude]
+    }
+  }));
+  const { clusters, supercluster } = useSupercluster({
+    points,
+    bounds: viewport.bounds,
+    zoom: viewport.zoom,
+    options: { radius: 75, maxZoom: 20 }
+  });
   const location = useLocation();
   const navigate = useNavigate();
   const { language } = useContext(LanguageContext);
@@ -114,6 +147,52 @@ const PropertySearchListingGrid = () => {
 
   const t = translations[language] || translations.en;
 
+// Mock property data
+const mockProperties = [
+  {
+    id: 1,
+    title: 'Modern 2-Bedroom Apartment',
+    price: 850000,
+    currency: 'NGN',
+    location: 'Victoria Island, Lagos',
+    propertyType: 'Apartments',
+    images: ['/assets/images/no_image.png'],
+    trustScore: 4.8,
+    verified: true,
+    features: ['2 Beds', '2 Baths', '85 sqm'],
+    amenities: ['Parking', 'Security', 'Swimming Pool'],
+    landlordResponsive: true,
+    virtualTour: true,
+    favorite: false,
+    latitude: 6.4281,
+    longitude: 3.4214,
+    landlord: {
+      verification_status: 'approved'
+    }
+  },
+  {
+    id: 2,
+    title: 'Luxury Self-Contain Studio',
+    price: 450000,
+    currency: 'NGN',
+    location: 'Ikeja GRA, Lagos',
+    propertyType: 'Self-Contain',
+    images: ['/assets/images/no_image.png'],
+    trustScore: 4.5,
+    verified: true,
+    features: ['1 Bed', '1 Bath', '45 sqm'],
+    amenities: ['WiFi', 'Kitchen', 'AC'],
+    landlordResponsive: false,
+    virtualTour: false,
+    favorite: true,
+    latitude: 6.6018,
+    longitude: 3.3515,
+    landlord: {
+      verification_status: 'pending'
+    }
+  }
+];
+
   // Filter properties based on current filters and search
   const filteredProperties = properties.filter(property => {
     // Exclude hidden properties from public view
@@ -193,8 +272,26 @@ const PropertySearchListingGrid = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [loadingMore, hasMore, sortedProperties.length]);
 
-  const handleSearchChange = (query) => {
-    setSearchQuery(query);
+const handleFilterChange = (newFilters) => {
+  setSelectedFilters(newFilters);
+};
+
+const handleSearchChange = async (query) => {
+  // Insert your search logic here
+};
+
+
+
+    if (query) {
+      const response = await fetch(
+        `https://api.mapbox.com/geocoding/v5/mapbox.places/${query}.json?access_token=${process.env.REACT_APP_MAPBOX_TOKEN}`
+      );
+      const data = await response.json();
+      if (data.features.length > 0) {
+        const [longitude, latitude] = data.features[0].center;
+        setViewport({ ...viewport, latitude, longitude, zoom: 12 });
+      }
+    }
   };
 
   const clearAllFilters = () => {
@@ -332,10 +429,166 @@ const PropertySearchListingGrid = () => {
               )}
             </>
           ) : (
-            /* Map View */
-            <div className="h-[calc(100vh-250px)]"> {/* Adjust height to fill available space */}
-                <MapboxView properties={sortedProperties} />
-            </div>
+// components/MapboxView.tsx
+
+import React, { useState, useMemo, useCallback } from 'react';
+import Mapbox from './Mapbox'; // assuming it's a wrapper around react-map-gl
+import { Marker, Popup, FlyToInterpolator } from 'react-map-gl';
+import DrawControl from './DrawControl';
+import useSupercluster from 'use-supercluster';
+import * as turf from '@turf/turf';
+
+interface Property {
+  id: number;
+  title: string;
+  price: number;
+  currency: string;
+  latitude: number;
+  longitude: number;
+  [key: string]: any;
+}
+
+interface Viewport {
+  latitude: number;
+  longitude: number;
+  zoom: number;
+  [key: string]: any;
+}
+
+interface MapboxViewProps {
+  properties: Property[];
+  viewport: Viewport;
+  onMove: (evt: any) => void;
+  selectedProperty?: Property | null;
+  onSelectProperty: (property: Property | null) => void;
+  onDrawPolygon: (polygon: GeoJSON.Feature) => void;
+}
+
+const MapboxView: React.FC<MapboxViewProps> = ({
+  properties,
+  viewport,
+  onMove,
+  selectedProperty,
+  onSelectProperty,
+  onDrawPolygon
+}) => {
+  const [points] = useState(
+    properties.map(property => ({
+      type: 'Feature',
+      properties: {
+        cluster: false,
+        propertyId: property.id,
+        ...property
+      },
+      geometry: {
+        type: 'Point',
+        coordinates: [property.longitude, property.latitude]
+      }
+    }))
+  );
+
+  const bounds = useMemo(() => {
+    if (points.length === 0) return null;
+    const coords = points.map(p => p.geometry.coordinates);
+    const lons = coords.map(c => c[0]);
+    const lats = coords.map(c => c[1]);
+    return [
+      Math.min(...lons),
+      Math.min(...lats),
+      Math.max(...lons),
+      Math.max(...lats)
+    ];
+  }, [points]);
+
+  const { clusters, supercluster } = useSupercluster({
+    points,
+    bounds,
+    zoom: viewport.zoom,
+    options: { radius: 75, maxZoom: 20 }
+  });
+
+  const handleDraw = useCallback((e: any) => {
+    const polygon = e.features[0];
+    onDrawPolygon(polygon);
+  }, [onDrawPolygon]);
+
+  return (
+    <Mapbox
+      {...viewport}
+      onMove={onMove}
+      style={{ width: '100%', height: '100%' }}
+    >
+      {clusters.map((cluster: any) => {
+        const [longitude, latitude] = cluster.geometry.coordinates;
+        const { cluster: isCluster, point_count: pointCount } = cluster.properties;
+
+        if (isCluster) {
+          return (
+            <Marker key={cluster.id} longitude={longitude} latitude={latitude}>
+              <div
+                className="cluster-marker"
+                style={{
+                  width: `${10 + (pointCount / points.length) * 20}px`,
+                  height: `${10 + (pointCount / points.length) * 20}px`,
+                }}
+                onClick={() => {
+                  const expansionZoom = Math.min(
+                    supercluster.getClusterExpansionZoom(cluster.id),
+                    20
+                  );
+                  onMove({
+                    viewState: {
+                      ...viewport,
+                      latitude,
+                      longitude,
+                      zoom: expansionZoom,
+                      transitionInterpolator: new FlyToInterpolator({ speed: 2 }),
+                      transitionDuration: 'auto'
+                    }
+                  });
+                }}
+              >
+                {pointCount}
+              </div>
+            </Marker>
+          );
+        }
+
+        return (
+          <Marker
+            key={cluster.properties.propertyId}
+            longitude={longitude}
+            latitude={latitude}
+            onClick={() => onSelectProperty(cluster.properties)}
+          />
+        );
+      })}
+
+      <DrawControl
+        position="top-left"
+        displayControlsDefault={false}
+        controls={{ polygon: true, trash: true }}
+        onCreate={handleDraw}
+      />
+
+      {selectedProperty && (
+        <Popup
+          longitude={selectedProperty.longitude}
+          latitude={selectedProperty.latitude}
+          onClose={() => onSelectProperty(null)}
+          closeOnClick={false}
+        >
+          <div>
+            <h2>{selectedProperty.title}</h2>
+            <p>{selectedProperty.price} {selectedProperty.currency}</p>
+          </div>
+        </Popup>
+      )}
+    </Mapbox>
+  );
+};
+
+export default MapboxView;
           )}
         </div>
       </main>

@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 import AppImage from '../../../components/AppImage';
-import { getPropertyTypeDisplay } from '../../../utils/enums'; // Import the enum helper
+import VerifiedBadge from '../../../components/VerifiedBadge';
+import { getPropertyTypeDisplay } from '../../../utils/enums';
 
 // Language Context
 const LanguageContext = React.createContext({
@@ -265,13 +266,16 @@ const PropertyCard = ({ property, onToggleFavorite }) => {
           </div>
         )}
 
-        {/* Landlord Responsiveness */}
-        {property.landlordResponsive && (
-          <div className="flex items-center space-x-1 text-success text-sm mb-2">
-            <Icon name="Clock" size={14} />
-            <span>{t.responsiveLandlord}</span>
-          </div>
-        )}
+        <div className="flex items-center justify-between">
+            {/* Landlord Responsiveness */}
+            {property.landlordResponsive && (
+            <div className="flex items-center space-x-1 text-success text-sm mb-2">
+                <Icon name="Clock" size={14} />
+                <span>{t.responsiveLandlord}</span>
+            </div>
+            )}
+            {property.landlord?.verification_status === 'approved' && <VerifiedBadge />}
+        </div>
 
         {/* Action Buttons */}
         <div className="flex items-center space-x-2 pt-2 border-t border-border">

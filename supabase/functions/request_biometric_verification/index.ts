@@ -31,36 +31,23 @@ app.use(async (ctx) => {
     const tesseract = new Tesseract();
     const ocrResult = await tesseract.recognize(id_image_url);
 
-    // 3. Perform Face ID match
-    const faceapi = require('face-api.js');
-    const canvas = require('canvas');
+    // 3. Perform Face ID match using a secure FaceID API
+    const faceIdResponse = await fetch('https://api.faceid.com/v1/match', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${Deno.env.get('FACEID_API_KEY')}`,
+        },
+        body: JSON.stringify({
+            id_image_url,
+            biometric_data,
+        }),
+    });
 
-    const { Canvas, Image, ImageData } = canvas;
-    faceapi.env.monkeyPatch({ Canvas, Image, ImageData });
+    const faceIdResult = await faceIdResponse.json();
 
-    await faceapi.nets.ssdMobilenetv1.loadFromUri('https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model');
-    await faceapi.nets.faceLandmark68Net.loadFromUri('https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model');
-    await faceapi.nets.faceRecognitionNet.loadFromUri('https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model');
-
-    const idImage = await canvas.loadImage(id_image_url);
-    const biometricImage = await canvas.loadImage(biometric_data);
-
-    const idImageDetections = await faceapi.detectAllFaces(idImage).withFaceLandmarks().withFaceDescriptors();
-    const biometricImageDetections = await faceapi.detectAllFaces(biometricImage).withFaceLandmarks().withFaceDescriptors();
-
-    let isFaceMatch = false;
-    let reason = 'Face match failed.';
-
-    if (idImageDetections.length > 0 && biometricImageDetections.length > 0) {
-      const faceMatcher = new faceapi.FaceMatcher(idImageDetections);
-      const bestMatch = faceMatcher.findBestMatch(biometricImageDetections[0].descriptor);
-      if (bestMatch.label !== 'unknown') {
-        isFaceMatch = true;
-        reason = 'Face match successful.';
-      }
-    } else {
-      reason = 'Could not detect faces in one or both images.';
-    }
+    let isFaceMatch = faceIdResult.isMatch;
+    let reason = faceIdResult.reason;
 
     // 4. Admin review cues
     let status = 'approved';
@@ -68,7 +55,6 @@ app.use(async (ctx) => {
       status = 'rejected';
     } else if (metadata.ip_address && metadata.gps_location) {
         // Basic check for location mismatch
-        // In a real-world scenario, you would use a more sophisticated method to compare IP and GPS locations.
         if (metadata.ip_address.country !== metadata.gps_location.country) {
             status = 'flagged';
             reason = 'IP address and GPS location mismatch.';

@@ -5,9 +5,16 @@ const supabaseUrl = Deno.env.get('SUPABASE_URL')
 const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY')
 const supabase = createClient(supabaseUrl, supabaseKey)
 
+const weights = {
+    deal_completed: 10,
+    verification_completed: 20,
+    flag_received: -30,
+    responsiveness: 5,
+};
+
 serve(async (req) => {
   try {
-    const { user_id, score_change, reason } = await req.json()
+    const { user_id, action, responsiveness_score } = await req.json()
 
     const { data: currentScore, error: currentScoreError } = await supabase
         .from('trust_scores')
@@ -18,6 +25,31 @@ serve(async (req) => {
     if (currentScoreError) {
         throw new Error(`Error fetching current score: ${currentScoreError.message}`)
     }
+
+    let score_change = 0;
+    let reason = '';
+
+    switch (action) {
+        case 'deal_completed':
+            score_change = weights.deal_completed;
+            reason = 'Deal completed successfully';
+            break;
+        case 'verification_completed':
+            score_change = weights.verification_completed;
+            reason = 'Verification completed successfully';
+            break;
+        case 'flag_received':
+            score_change = weights.flag_received;
+            reason = 'Flag received from another user';
+            break;
+        case 'responsiveness':
+            score_change = weights.responsiveness * responsiveness_score;
+            reason = 'Responsiveness score updated';
+            break;
+        default:
+            throw new Error(`Invalid action: ${action}`);
+    }
+
 
     const newScore = currentScore.score + score_change
 

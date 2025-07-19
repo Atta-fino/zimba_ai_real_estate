@@ -79,6 +79,10 @@ CREATE POLICY "Admin has full access" ON biometric_verifications FOR ALL USING (
 CREATE POLICY "Admin has full access" ON flexpay_plans FOR ALL USING (is_admin(auth.uid()));
 CREATE POLICY "Admin has full access" ON withdrawals FOR ALL USING (is_admin(auth.uid()));
 
+-- bookings
+CREATE POLICY "Users with a high enough TrustScore can create bookings" ON bookings
+    FOR INSERT WITH CHECK (get_trust_score(auth.uid()) > 50);
+
 -- Helper function to check for admin role
 CREATE OR REPLACE FUNCTION is_admin(user_id UUID)
 RETURNS BOOLEAN AS $$
@@ -86,4 +90,11 @@ RETURNS BOOLEAN AS $$
     SELECT 1 FROM users
     WHERE id = user_id AND role = 'admin'
   );
+$$ LANGUAGE sql;
+
+-- Helper function to get a user's trust score
+CREATE OR REPLACE FUNCTION get_trust_score(user_id UUID)
+RETURNS INT AS $$
+  SELECT score FROM trust_scores
+  WHERE trust_scores.user_id = user_id;
 $$ LANGUAGE sql;

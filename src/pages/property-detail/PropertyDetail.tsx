@@ -1,6 +1,7 @@
 import React from 'react';
 import Mapbox from '../../components/Mapbox';
 import { Marker } from 'react-map-gl';
+import Amenities from '../../components/Amenities';
 
 const PropertyDetail = ({ property }) => {
   const handleGetDirections = () => {
@@ -14,6 +15,9 @@ const PropertyDetail = ({ property }) => {
         <Mapbox latitude={property.latitude} longitude={property.longitude}>
             <Marker longitude={property.longitude} latitude={property.latitude} />
         </Mapbox>
+      </div>
+      <div className="my-4">
+        <Amenities features={property.features} />
       </div>
       <button onClick={handleGetDirections} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
         Get Directions

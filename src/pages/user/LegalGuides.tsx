@@ -5,6 +5,10 @@ const supabaseUrl = process.env.REACT_APP_SUPABASE_URL;
 const supabaseKey = process.env.REACT_APP_SUPABASE_ANON_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
+const countryFlags = {
+  GH: '🇬🇭',
+};
+
 const LegalGuides = ({ countryCode }) => {
   const [guides, setGuides] = useState([]);
 
@@ -31,8 +35,16 @@ const LegalGuides = ({ countryCode }) => {
       <div>
         {guides.map((guide) => (
           <div key={guide.id} className="mb-4 p-4 border rounded-lg">
-            <h2 className="text-xl font-bold">{guide.title}</h2>
-            <p>{guide.content}</p>
+            <h2 className="text-xl font-bold">
+              {countryFlags[guide.country_code]} {guide.title}
+            </h2>
+            <ul>
+              {guide.content.split('\\n').map((line, index) => (
+                <li key={index} className="ml-4 list-disc">
+                  {line}
+                </li>
+              ))}
+            </ul>
           </div>
         ))}
       </div>

@@ -50,7 +50,7 @@ const AIChatSupportInterface = () => {
   const translations = {
     en: {
       chatSupport: 'AI Chat Support',
-      welcomeMessage: `Hello there! I'm Zimba AI, your friendly guide to finding and securing your perfect space. 🏡\n\nI can help you with things like understanding escrow, checking on your booking, or learning about our FlexPay options.\n\nWhat's on your mind today?`,
+      welcomeMessage: `Chale, welcome! I'm Zimba AI, your personal guide for all things property in Ghana. 🇬🇭 Whether you're looking to rent, buy, or list a property, I'm here to make it simple and safe for you.\n\nNo long thing, just tell me what you need. Are you trying to understand how our secure Escrow or MoMo payments work, or maybe you want to know about FlexPay?`,
       aiTyping: 'Zimba AI is typing...',
       connectionLost: 'Connection lost. Trying to reconnect...',
       reconnected: 'Reconnected successfully!'
@@ -164,43 +164,51 @@ const AIChatSupportInterface = () => {
 
       if (lowerCaseMessage.includes('escrow')) {
         response = {
-          content: `Of course! Escrow is a secure financial arrangement where Zimba holds your payment until you've confirmed you're happy with the property (like after you've received the keys). This protects you from scams and ensures the landlord gets paid only when you're satisfied. It's like having a trusted middle-person for your peace of mind. 🤝`,
+          content: `I understand, dealing with payments can be stressful. But don't worry, our Escrow system is designed to protect you. Think of it as a secure digital safe. You place your rent payment (via MoMo or card) into the safe, and we only give the key to the landlord after you've moved in and confirmed everything is as it should be. This way, your money is always safe. No wahala.`,
           quickReplies: [
-            { text: "What happens after I pay?", action: 'escrow_next_steps' },
-            { text: "Is my money really safe?", action: 'escrow_safety' },
+            { text: "So Zimba holds the money?", action: 'escrow_next_steps' },
+            { text: "How do I confirm everything?", action: 'escrow_safety' },
           ]
         };
       } else if (lowerCaseMessage.includes('flexpay')) {
         response = {
-          content: `FlexPay is our feature that makes paying rent easier! Instead of one large annual payment, landlords who enable FlexPay allow you to pay 3 months upfront, and then the rest in convenient monthly installments. It helps with your cash flow and budgeting! 💳`,
+          content: `Ah, FlexPay! It's a popular one. We know that paying a whole year's rent at once is a heavy lift. So, with FlexPay, you can pay for just 3 months upfront, and then handle the rest in easy monthly payments via MoMo or card. It's all about making life easier for you.`,
           quickReplies: [
-            { text: "How do I find FlexPay properties?", action: 'flexpay_find' },
-            { text: "Are there extra fees?", action: 'flexpay_fees' },
+            { text: "Which properties have FlexPay?", action: 'flexpay_find' },
+            { text: "Are there any hidden charges?", action: 'flexpay_fees' },
           ]
         };
       } else if (lowerCaseMessage.includes('trust')) {
         response = {
-          content: `That's a great question! Trust is everything in real estate. We build it in a few key ways:\n\n1.  **Verification:** We verify landlords with ID and document checks.\n2.  **TrustScore:** Our scoring system rates users based on their reliability and responsiveness.\n3.  **Secure Escrow:** We protect your money until you confirm you're happy.\n\nThis helps create a safe and reliable community for everyone.`,
+          content: `You're right to ask about trust. It's the most important thing. We take your safety very seriously. That's why we verify every landlord's ID and documents. We also have our TrustScore system, which is like a rating for good behaviour on the app. And of course, our secure Escrow means your money is always protected. We're building a community you can rely on.`,
           quickReplies: [
-            { text: "Tell me more about verification", action: 'verification_info' },
-            { text: "How is TrustScore calculated?", action: 'trustscore_info' },
+            { text: "How do you verify landlords?", action: 'verification_info' },
+            { text: "What's a good TrustScore?", action: 'trustscore_info' },
+          ]
+        };
+      } else if (lowerCaseMessage.includes('rent law')) {
+        response = {
+          content: `Ah, the Ghana Rent Act! It's very important to know your rights. Here are a few key points:\n\n- Landlords can only ask for a maximum of 6 months' rent in advance.\n- Your landlord must give you a receipt for all payments.\n- As a tenant, you need to give your landlord 3 months' notice if you want to leave before your tenancy is over.\n\nI hope this helps! Let me know if you have any other questions.`,
+          quickReplies: [
+            { text: "What if my landlord asks for more?", action: 'rent_act_more' },
+            { text: "Where can I read the full law?", action: 'rent_act_full' },
           ]
         };
       } else {
         // Default response for unhandled questions, now with context
-        let defaultContent = `Hi ${mockChatContext.user.name}, that's a great question about "${userMessage}".`;
+        let defaultContent = `That's a good question, ${mockChatContext.user.name}. I'm still learning about "${userMessage}".`;
 
         if (mockChatContext.property?.title) {
-            defaultContent += ` Are you asking in relation to the "${mockChatContext.property.title}" listing?`;
+            defaultContent += ` Is this related to the "${mockChatContext.property.title}" listing? Knowing this helps me to give you a more accurate answer.`;
         }
 
-        defaultContent += `\n\nWhile I'm still learning, I can connect you with our human support team for detailed help. Would you like that?`;
+        defaultContent += `\n\nIn the meantime, would you like me to connect you with our human support team? They are experts and can give you a hand.`;
 
         response = {
           content: defaultContent,
           quickReplies: [
-            { text: 'Yes, connect me to support', icon: 'MessageCircle', action: 'whatsapp_handoff' },
-            { text: 'No, I\'ll ask something else', icon: 'RotateCcw', action: 'retry' }
+            { text: 'Yes, please connect me', icon: 'MessageCircle', action: 'whatsapp_handoff' },
+            { text: 'I\'ll ask another question', icon: 'RotateCcw', action: 'retry' }
           ]
         };
       }
